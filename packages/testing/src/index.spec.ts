@@ -5,8 +5,17 @@ import {
   FakeNotificationAdapter,
   FakePspAdapter,
   FixedClock,
+  IdempotencyRequestConflictError,
+  InMemoryIdempotencyStore,
+  InvalidStateTransitionError,
   parseFakeBearerToken,
   SequenceUuidGenerator,
+  StateMachineFixture,
+  StaleVersionError,
+  assertExpectedVersion,
+  assertIntegerMinorUnits,
+  assertSafeEventPayload,
+  assertTransitionEnvelope,
 } from './index.js';
 
 describe('deterministic test helpers', () => {
@@ -84,5 +93,85 @@ describe('fake external adapters', () => {
     expect(adapter.geocode('  Pilot Area 1  ')).toEqual(
       adapter.geocode('Pilot Area 1'),
     );
+  });
+});
+
+describe('architecture invariant fixtures', () => {
+  type TestState = 'DRAFT' | 'OPEN' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+  const machine = new StateMachineFixture<TestState>({
+    DRAFT: ['OPEN'],
+    OPEN: ['CONFIRMED', 'CANCELLED'],
+    CONFIRMED: ['COMPLETED', 'CANCELLED'],
+    COMPLETED: [],
+    CANCELLED: [],
+  } as const);
+
+  it('enumerates allowed and denied state pairs for contract tests', () => {
+    expect(machine.allowedPairs()).toContainEqual(['OPEN', 'CONFIRMED']);
+    expect(machine.deniedPairs()).toContainEqual(['COMPLETED', 'OPEN']);
+    expect(() => machine.assertTransition('DRAFT', 'OPEN')).not.toThrow();
+    expect(() => machine.assertTransition('COMPLETED', 'OPEN')).toThrow(
+      InvalidStateTransitionError,
+    );
+  });
+
+  it('rejects stale optimistic concurrency versions', () => {
+    expect(() => assertExpectedVersion(3, 4)).toThrow(StaleVersionError);
+    expect(() => assertExpectedVersion(4, 4)).not.toThrow();
+  });
+
+  it('replays the same command once and rejects key reuse', () => {
+    const store = new InMemoryIdempotencyStore<{ assignmentId: string }>();
+    let effects = 0;
+    const execute = (hash: string) =>
+      store.execute('confirm-1', hash, () => {
+        effects += 1;
+        return { assignmentId: 'assignment-1' };
+      });
+
+    expect(execute('request-a').replayed).toBe(false);
+    expect(execute('request-a')).toEqual({
+      replayed: true,
+      result: { assignmentId: 'assignment-1' },
+    });
+    expect(effects).toBe(1);
+    expect(store.size).toBe(1);
+    expect(() => execute('request-b')).toThrow(IdempotencyRequestConflictError);
+  });
+
+  it('rejects sensitive fields anywhere in an event payload', () => {
+    expect(() =>
+      assertSafeEventPayload({ assignmentId: 'a-1', status: 'CONFIRMED' }),
+    ).not.toThrow();
+    expect(() =>
+      assertSafeEventPayload({ nested: { exact_address: 'secret' } }),
+    ).toThrow(/exact_address/);
+  });
+
+  it('requires one actor and complete transition evidence', () => {
+    expect(() =>
+      assertTransitionEnvelope(
+        {
+          commandId: 'command-1',
+          correlationId: 'request-1',
+          expectedVersion: 0,
+          systemActor: 'deadline-service',
+          reasonCode: 'reservation_expired',
+        },
+        { reasonRequired: true },
+      ),
+    ).not.toThrow();
+    expect(() =>
+      assertTransitionEnvelope({
+        commandId: 'command-1',
+        correlationId: 'request-1',
+        expectedVersion: 0,
+      }),
+    ).toThrow(/Exactly one/);
+  });
+
+  it('requires money to use safe integer minor units', () => {
+    expect(() => assertIntegerMinorUnits(12_500)).not.toThrow();
+    expect(() => assertIntegerMinorUnits(12.5)).toThrow(/integer minor units/);
   });
 });

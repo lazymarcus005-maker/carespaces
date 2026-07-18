@@ -7,7 +7,7 @@
     "dev": "next dev --port 3001",
     "lint": "eslint .",
     "start": "next start --port 3001",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

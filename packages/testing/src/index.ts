@@ -2,6 +2,8 @@ export interface Clock {
   now(): Date;
 }
 
+export * from './architecture.js';
+
 export class FixedClock implements Clock {
   private instant: Date;
 

@@ -505,7 +505,7 @@ VAL-03/07/10
 
 สถานะ foundation execution:
 
-- [ ] สร้าง issue `VAL-01` ถึง `VAL-10` พร้อม owner
+- [x] สร้าง issue `VAL-01` ถึง `VAL-10` พร้อม triage owner และ functional owner ([validation register](../validation/README.md))
 - [ ] ยืนยัน team roles และ environment access model
 - [x] ปิด `VAL-10` แล้วบันทึก ADR ORM/database (`docs/adr/009-orm-and-database-migrations.md`)
 - [ ] ปิด/มี sandbox plan สำหรับ `VAL-07` IdP และ `VAL-02` PSP
@@ -516,7 +516,7 @@ VAL-03/07/10
 - [x] Scaffold `FND-08` deterministic test harness: shared clock/UUID fixtures, fake IdP helper, PSP/notification/maps adapters และ package-level regression tests
 - [x] Scaffold `PLT-04` audit/state-transition writer พร้อม append-only transition table, reason/correlation/version metadata และ IAM integration evidence
 - [ ] ทำ acceptance ที่เหลือของ `FND-08`, `PLT-04` และ `IAM-01` ถึง `IAM-04` ให้ครบก่อนเริ่ม feature domain
-- [ ] สร้าง architecture test fixtures จาก P03 invariants
+- [x] สร้าง architecture test fixtures จาก P03 invariants: state-machine pairs, optimistic version, idempotency, event privacy, transition envelope และ integer minor units
 - [x] กำหนด `main` เป็น initial branch, เพิ่ม CI checks และใช้ reviewed SQL forward/down migrations ตาม ADR-009
 - [ ] นัด review P02/P03/P04 ร่วม Product, Clinical, Ops, Finance, DPO และ Engineering
 

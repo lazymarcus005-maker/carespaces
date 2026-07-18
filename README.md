@@ -47,6 +47,7 @@ OpenAPI document and regenerates the typed `@carespaces/api-contracts` client us
 - [`docs/product/p03-domain-model.md`](docs/product/p03-domain-model.md) — domain model, state machines and permissions
 - [`docs/product/p04-delivery-backlog.md`](docs/product/p04-delivery-backlog.md) — delivery backlog and vertical slices
 - [`docs/adr`](docs/adr) — architecture decision records
+- [`docs/validation`](docs/validation) — validation gates and GitHub tracking
 - [`docs/openapi.json`](docs/openapi.json) — generated OpenAPI document
 
 ## Local database
