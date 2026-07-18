@@ -1,4 +1,5 @@
 import { Pool } from 'pg';
+import { readAuditTimeline } from '../src/audit-query.js';
 import { migrateUp, migrationStatus, rollbackLatest } from '../src/migrator.js';
 import { seedSynthetic } from '../src/seed.js';
 
@@ -6,6 +7,7 @@ const adminUrl = 'postgresql://postgres:postgres@127.0.0.1:54329/carespaces';
 const testDatabase = 'carespaces_foundation_test';
 const testUrl = `postgresql://postgres:postgres@127.0.0.1:54329/${testDatabase}`;
 const appUrl = `postgresql://carespaces_app:carespaces_app@127.0.0.1:54329/${testDatabase}`;
+const auditReaderUrl = `postgresql://carespaces_audit_reader:carespaces_audit_reader@127.0.0.1:54329/${testDatabase}`;
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
@@ -13,6 +15,15 @@ function assert(condition: unknown, message: string): asserts condition {
 
 async function recreateDatabase(): Promise<void> {
   const admin = new Pool({ connectionString: adminUrl, max: 1 });
+  await admin.query(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'carespaces_audit_reader') THEN
+        CREATE ROLE carespaces_audit_reader LOGIN PASSWORD 'carespaces_audit_reader' NOSUPERUSER NOBYPASSRLS;
+      END IF;
+    END
+    $$
+  `);
   await admin.query(`DROP DATABASE IF EXISTS ${testDatabase} WITH (FORCE)`);
   await admin.query(`CREATE DATABASE ${testDatabase}`);
   await admin.end();
@@ -24,7 +35,7 @@ async function main(): Promise<void> {
 
   const applied = await migrateUp(pool);
   assert(
-    applied.length === 3 && applied[0] === '0001_foundation',
+    applied.length === 4 && applied[0] === '0001_foundation',
     'forward migration failed',
   );
   const status = await migrationStatus(pool);
@@ -85,14 +96,61 @@ async function main(): Promise<void> {
     await appPool.end();
   }
 
+  const auditReaderPool = new Pool({
+    connectionString: auditReaderUrl,
+    max: 1,
+  });
+  const auditRows = await readAuditTimeline(
+    {
+      reader: auditReaderPool,
+      writer: pool,
+      nextId: () => '03000000-0000-4000-8000-000000000001',
+    },
+    {
+      actor: {
+        tenantId: '02000000-0000-4000-8000-000000000001',
+        userId: '01000000-0000-4000-8000-000000000001',
+      },
+      reasonCode: 'foundation_verification',
+      correlationId: 'audit-query-verification',
+      filter: { tenantId: '02000000-0000-4000-8000-000000000001' },
+    },
+  );
+  assert(
+    auditRows.length > 0,
+    'audit reader could not query the timeline projection',
+  );
+  const tracedRead = await pool.query<{ count: string }>(
+    "SELECT count(*)::text AS count FROM platform.audit_event WHERE action = 'audit.timeline.read' AND correlation_id = 'audit-query-verification'",
+  );
+  assert(
+    tracedRead.rows[0]?.count === '1',
+    'privileged audit read was not traced',
+  );
+  let auditMutationRejected = false;
+  try {
+    await auditReaderPool.query('DELETE FROM platform.audit_event');
+  } catch {
+    auditMutationRejected = true;
+  }
+  assert(
+    auditMutationRejected,
+    'audit reader could mutate append-only audit data',
+  );
+  await auditReaderPool.end();
+
   const rolledBack = await rollbackLatest(pool);
   assert(
-    rolledBack === '0003_audit_state_transition',
+    rolledBack === '0004_privileged_audit_projection',
     'rollback did not select the latest migration',
   );
   assert(
+    (await rollbackLatest(pool)) === '0003_audit_state_transition',
+    'audit transition rollback did not run after the projection migration',
+  );
+  assert(
     (await rollbackLatest(pool)) === '0002_identity_walking_skeleton',
-    'identity rollback did not run after the latest migration',
+    'identity rollback did not run after the audit migration',
   );
   assert(
     (await rollbackLatest(pool)) === '0001_foundation',
@@ -108,7 +166,7 @@ async function main(): Promise<void> {
 
   const reapplied = await migrateUp(pool);
   assert(
-    reapplied.length === 3,
+    reapplied.length === 4,
     'restore rehearsal could not reapply migration',
   );
   await pool.end();
@@ -117,7 +175,7 @@ async function main(): Promise<void> {
   await cleanup.query(`DROP DATABASE IF EXISTS ${testDatabase} WITH (FORCE)`);
   await cleanup.end();
   console.log(
-    'FND-04 passed: forward, ledger, seed guard, RLS, rollback and restore rehearsal.',
+    'FND-04/PLT-04 passed: forward, ledger, seed guard, RLS, privileged audit read, rollback and restore rehearsal.',
   );
 }
 

@@ -16,7 +16,7 @@
   "scripts": {
     "build": "node scripts/clean.mjs && tsc -p tsconfig.build.json && node scripts/copy-migrations.mjs",
     "lint": "eslint src test scripts",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run --exclude dist/**",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

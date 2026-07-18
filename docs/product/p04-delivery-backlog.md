@@ -514,8 +514,8 @@ VAL-03/07/10
 - [x] Verify `FND-05` API `/v1`, validation/error envelope, request ID, OpenAPI, generated typed client และ contract test
 - [x] สร้าง IAM walking skeleton baseline ครอบคลุม fake auth, family tenant, membership, tenant isolation, audit, outbox และ idempotent retry
 - [x] Scaffold `FND-08` deterministic test harness: shared clock/UUID fixtures, fake IdP helper, PSP/notification/maps adapters และ package-level regression tests
-- [x] Scaffold `PLT-04` audit/state-transition writer พร้อม append-only transition table, reason/correlation/version metadata และ IAM integration evidence
-- [ ] ทำ acceptance ที่เหลือของ `FND-08`, `PLT-04` และ `IAM-01` ถึง `IAM-04` ให้ครบก่อนเริ่ม feature domain (shared contracts พร้อม; real IdP/MFA และ audit query/export ยัง pending)
+- [x] Verify `PLT-04` append-only audit/state-transition writer, privileged bounded query/CSV export, metadata redaction, dedicated read role และ traced read/export evidence
+- [ ] ปิด provider-backed acceptance ของ `IAM-01`/`IAM-03` ด้วย real IdP/JWKS/MFA sandbox และ role-action API (ส่วน `FND-08`, `PLT-04`, `IAM-02` และ `IAM-04` policy baseline verify แล้ว)
 - [x] สร้าง architecture test fixtures จาก P03 invariants: state-machine pairs, optimistic version, idempotency, event privacy, transition envelope และ integer minor units
 - [x] กำหนด `main` เป็น initial branch, เพิ่ม CI checks และใช้ reviewed SQL forward/down migrations ตาม ADR-009
 - [ ] นัด review P02/P03/P04 ร่วม Product, Clinical, Ops, Finance, DPO และ Engineering ([review packet ready](../validation/stakeholder-review-checklist.md); รอ named reviewers/date)

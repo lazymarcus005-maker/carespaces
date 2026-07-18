@@ -24,6 +24,7 @@ Tracking: [GitHub issue #11](https://github.com/lazymarcus005-maker/carespaces/i
 - [Environment access model](environment-access-model.md)
 - [PSP sandbox plan](VAL-02-psp-sandbox-plan.md)
 - [Identity/KYC sandbox plan](VAL-07-idp-sandbox-plan.md)
+- [ADR-010 external identity/payment/audit boundaries](../adr/010-external-identity-and-payment-boundaries.md)
 
 ## Completion rule
 

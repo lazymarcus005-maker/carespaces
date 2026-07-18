@@ -5,6 +5,11 @@
 The development-only identity adapter accepts `Authorization: Bearer fake:<subject>`. It is disabled
 when `NODE_ENV=production` and is replaceable through the `IDENTITY_PROVIDER` injection token.
 
+The production boundary is OIDC-compatible. `OidcIdentityProvider` delegates signature/JWKS and
+revocation checks to a provider-specific `OidcTokenVerifier`, then validates issuer, audience, time,
+verified-contact, MFA and privileged-session claims before creating the application principal. A real
+verifier must not be enabled until it passes the VAL-07 sandbox plan.
+
 Create a family workspace:
 
 ```http

@@ -17,3 +17,13 @@ Client applications must consume API contracts and must not import this package 
 - Migrations run inside transactions while holding a PostgreSQL advisory lock.
 - Production rollback is a reviewed operational decision. Rehearse down/reapply or restore in a disposable database before release.
 - Infrastructure provisions database roles and credentials. The Compose init script only provisions the local `carespaces_app` role.
+
+## Privileged audit access
+
+Local Compose also provisions `carespaces_audit_reader`. It can select the unified
+`platform.audit_timeline` view but cannot mutate audit/transition tables. Deployed environments must
+provision the equivalent role and a separate `AUDIT_DATABASE_URL` secret through infrastructure.
+
+Use `readAuditTimeline` or `exportAuditTimelineCsv` with separate reader/writer pools. Both operations
+require a bounded filter and append actor/reason/correlation evidence before the privileged read. CSV
+exports omit metadata; returned metadata is recursively redacted.

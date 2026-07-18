@@ -5,6 +5,10 @@ Status: **Proposed — approval required**
 This model is the minimum-access baseline for development, staging, and production. Named people,
 backups, and approval dates must be added before the P04 checklist item is complete.
 
+Acting triage owner: `lazymarcus005-maker` for every pending decision until a functional primary and
+backup accept ownership. This assumption enables implementation but does not substitute for Clinical,
+Finance, Operations, DPO/Legal, or Security approval.
+
 ## Access principles
 
 - Every person uses an individual identity; shared accounts and shared credentials are prohibited.

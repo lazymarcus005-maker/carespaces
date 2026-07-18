@@ -14,10 +14,10 @@ export class AuthenticationGuard implements CanActivate {
     @Inject(IDENTITY_PROVIDER) private readonly identity: IdentityProvider,
   ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
     (request as AuthenticatedRequest).principal =
-      this.identity.authenticate(request);
+      await this.identity.authenticate(request);
     return true;
   }
 }

@@ -19,7 +19,15 @@ function requestHash(
   displayName: string,
 ): string {
   return createHash('sha256')
-    .update(JSON.stringify({ principal, displayName }))
+    .update(
+      JSON.stringify({
+        identity: {
+          provider: principal.provider,
+          subject: principal.subject,
+        },
+        displayName,
+      }),
+    )
     .digest('hex');
 }
 

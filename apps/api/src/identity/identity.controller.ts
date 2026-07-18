@@ -73,6 +73,11 @@ export class IdentityController {
     @Headers('idempotency-key') idempotencyKey: string | undefined,
     @Headers('x-request-id') requestId: string,
   ): Promise<FamilyTenantResponse> {
+    if (!request.principal.contactVerified) {
+      throw new ForbiddenException(
+        'A verified contact method is required for onboarding',
+      );
+    }
     const parsedBody = CreateFamilyTenantRequestSchema.safeParse(body);
     const parsedKey = IdempotencyKeySchema.safeParse(idempotencyKey);
     if (!parsedBody.success || !parsedKey.success) {
