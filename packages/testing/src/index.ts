@@ -3,6 +3,7 @@ export interface Clock {
 }
 
 export * from './architecture.js';
+export * from './external-contracts.js';
 
 export class FixedClock implements Clock {
   private instant: Date;
