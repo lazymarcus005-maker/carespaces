@@ -1,0 +1,49 @@
+{
+  "name": "carespaces",
+  "version": "0.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@10.32.1",
+  "scripts": {
+    "api:generate": "tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/generate-openapi.ts && openapi-typescript docs/openapi.json -o packages/api-contracts/src/generated/openapi.ts && prettier --write docs/openapi.json packages/api-contracts/src/generated/openapi.ts",
+    "api:check": "pnpm api:generate && prettier --check docs/openapi.json packages/api-contracts/src/generated/openapi.ts && git diff --exit-code -- docs/openapi.json packages/api-contracts/src/generated/openapi.ts",
+    "build": "turbo run build",
+    "db:down": "docker compose -f infrastructure/database/compose.yaml down",
+    "db:generate": "node node_modules/prisma/build/index.js generate --config spikes/orm/prisma.config.ts",
+    "db:migrate": "tsx packages/database/src/cli.ts up",
+    "db:rollback": "tsx packages/database/src/cli.ts down",
+    "db:seed": "tsx packages/database/src/cli.ts seed",
+    "db:spike": "tsx spikes/orm/run.ts",
+    "db:status": "tsx packages/database/src/cli.ts status",
+    "db:up": "docker compose -f infrastructure/database/compose.yaml up -d --wait",
+    "db:verify": "tsx packages/database/test/verify.ts",
+    "dev": "turbo run dev --parallel",
+    "format": "prettier --write \"{apps,packages,spikes}/**/*.{ts,tsx,css,json,mjs}\" \"{infrastructure,.github}/**/*.{yaml,yml}\" \"*.{json,mjs,yaml}\"",
+    "format:check": "prettier --check \"{apps,packages,spikes}/**/*.{ts,tsx,css,json,mjs}\" \"{infrastructure,.github}/**/*.{yaml,yml}\" \"*.{json,mjs,yaml}\"",
+    "iam:verify": "tsx --tsconfig apps/api/tsconfig.json apps/api/test/identity.integration.ts",
+    "lint": "turbo run lint && eslint spikes/**/*.ts",
+    "test": "turbo run test",
+    "test:integration": "pnpm db:verify && pnpm iam:verify",
+    "typecheck": "turbo run typecheck && pnpm db:generate && tsc -p spikes/orm/tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@prisma/adapter-pg": "7.8.0",
+    "@prisma/client": "7.8.0",
+    "@types/pg": "^8.15.6",
+    "drizzle-orm": "0.45.2",
+    "eslint": "^9.39.1",
+    "globals": "^16.5.0",
+    "openapi-typescript": "7.13.0",
+    "pg": "^8.16.3",
+    "postgres": "3.4.9",
+    "prettier": "^3.7.4",
+    "prisma": "7.8.0",
+    "tsx": "^4.21.0",
+    "turbo": "2.10.5",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.48.1"
+  }
+}

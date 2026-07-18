@@ -1,6 +1,6 @@
 # Carespaces — Tech Stack & Architecture Design (P01)
 
-> สถานะ: Proposed design สำหรับ MVP  
+> สถานะ: Approved baseline สำหรับ MVP — รับข้อเสนอ D-01 ถึง D-10 แล้ว
 > อ้างอิง: `idea.md` ณ วันที่ 13 กรกฎาคม 2026  
 > เป้าหมาย: B2C marketplace งานดูแลรายกะ/รายวันในกรุงเทพฯ โดยรองรับ B2B และงานระยะยาวในอนาคต
 
@@ -39,7 +39,7 @@
 | “Escrow” | อาจเป็นบริการที่ถูกกำกับ | ใช้คำว่า payment hold/release ตาม capability ของ PSP จน legal review เสร็จ |
 | Clinical governance | ใครอนุมัติ task/incident และ SLA | ตั้ง clinical policy owner และ versioned activity policy |
 | Consent/authority | ผู้จ้างอาจไม่ใช่ผู้ป่วย | เก็บ legal basis, relationship, consent/authorization และ expiry |
-| 24/7 operation | SOS/replacement promise ขึ้นกับคน | เปิดเฉพาะช่วงที่มี staffing; แสดง SLA ตามพื้นที่/เวลาอย่างตรงไปตรงมา |
+| 24/7 operation | SOS/replacement promise ขึ้นกับคน | Pilot เปิด care ops และรับกะ 08:00–20:00 น. (Asia/Bangkok) ทุกวัน; direct call ใช้ได้ตลอด แต่คำขอนอกเวลาไม่มี replacement SLA |
 | Price ownership | กระทบ quote, overtime, refund | ระบบสร้าง price quote จาก rate card; provider ไม่แก้ราคาหลัง accept |
 | Long-term job | scheduling/payment ซับซ้อน | ยังไม่รวม recurring contract; model เป็นหลาย shift ภายใต้ booking เดียวใน phase ถัดไป |
 | Anti-circumvention | กระทบ retention และ UX | ตัดสินใจเชิงนโยบาย ไม่ควรแก้ด้วยการซ่อนข้อมูลจนกระทบ emergency contact |
@@ -500,7 +500,7 @@ Separate non-production account
 └── dev / preview / staging (ใช้ synthetic data เท่านั้น)
 ```
 
-เลือก AWS Thailand Region เป็นค่าเริ่มต้นเพื่อลด latency และช่วยเรื่อง data residency แต่ Region นี้เป็น opt-in และ service ใหม่อาจไม่ครบเท่า Singapore จึงต้องทำ **region capability spike** ก่อนล็อก architecture หาก service สำคัญไม่พร้อม ให้เสนอ fallback เป็น Singapore พร้อม legal/data-transfer review แทนการกระจาย production dataสอง Region ตั้งแต่ MVP
+เลือก AWS Thailand Region (`ap-southeast-7`) เป็น primary region สำหรับ MVP เพื่อลด latency และช่วยเรื่อง data residency แต่ Region นี้เป็น opt-in และ service ใหม่อาจไม่ครบเท่า Singapore จึงต้องทำ **region capability spike** ใน Phase 0 หาก service สำคัญในสถาปัตยกรรมนี้ไม่พร้อมหรือไม่ผ่าน cost/operations criteria ให้ใช้ Singapore (`ap-southeast-1`) ทั้งระบบหลัง legal/data-transfer review โดยไม่ทำ active-active หรือกระจาย production data สอง Region ใน MVP
 
 ## 13. Reliability and non-functional requirements
 
@@ -562,9 +562,10 @@ carespaces/
 
 ## 15. Delivery plan
 
-### Phase 0 — Decisions and risk spikes (2–3 สัปดาห์)
+### Phase 0 — Validation and risk spikes (2–3 สัปดาห์)
 
-- ยืนยัน business/legal model, payment flow, clinical policy owner และ operating hours
+- ทำ legal validation ของ managed marketplace และ payment hold/release; แต่งตั้ง clinical policy owner
+- กำหนด roster ให้รองรับ care ops 08:00–20:00 น. ทุกวัน และทดสอบ escalation/replacement drill ก่อน pilot
 - spike PSP: hold/release, split/payout, refund, webhook, recipient KYC และ reconciliation
 - spike AWS Thailand service availability/cost และ mobile location/push บนอุปกรณ์ Android ที่พบมากในตลาด
 - ทำ threat model + data inventory + consent/retention matrix
@@ -594,20 +595,28 @@ carespaces/
 - clinical workflow simulation และ tabletop incident drill
 - pilot เขตจำกัด + operating hours จำกัด; วัด fill rate, time-to-match, cancellation, replacement success และ report completion
 
-## 16. Decisions required before implementation
+## 16. MVP decisions
 
-| ID | Decision | Recommended default | Owner |
-|---|---|---|---|
-| D-01 | Marketplace vs managed service | Managed marketplace with human care ops | Founder + Legal |
-| D-02 | Launch area | กรุงเทพฯ เขตที่มี provider density สูงก่อน | Product + Ops |
-| D-03 | Provider approval | Approved only; ยังไม่ให้ conditional รับงาน | Clinical + Ops |
-| D-04 | Pricing | Platform-generated quote จาก versioned rate card | Product + Finance |
-| D-05 | Payment semantics | PSP-supported hold/release; ห้ามใช้คำว่า escrow ก่อน review | Legal + Finance |
-| D-06 | SOS/replacement hours | แสดงเฉพาะ SLA ที่ทีม staff ได้จริง | Ops |
-| D-07 | Customer app | Responsive web/PWA ก่อน; provider เป็น native mobile | Product + Engineering |
-| D-08 | Cloud region | Thailand ถ้า capability spike ผ่าน | Engineering + DPO |
-| D-09 | ORM | Prisma vs Drizzle หลังทดสอบ PostGIS/RLS/migration | Engineering |
-| D-10 | Long-term jobs | เลื่อนไป phase หลัง pilot | Product |
+ข้อเสนอทั้งหมดได้รับการยอมรับเป็น baseline สำหรับ MVP เมื่อวันที่ 13 กรกฎาคม 2026 โดย decision ที่มี validation gate ยังคงต้องผ่าน gate ที่ระบุก่อน production launch แต่ไม่ถือเป็นคำถามด้านทิศทางที่ค้างอยู่
+
+| ID | Decision | Accepted MVP resolution | Status / gate | Owner |
+|---|---|---|---|---|
+| D-01 | Marketplace vs managed service | ใช้ **managed marketplace with human care ops**; platform ควบคุม verification, matching, quote, care workflow, incident และ replacement แต่ไม่อ้างตนเป็นบริการแพทย์ฉุกเฉิน | Accepted; legal review ต้องยืนยันสัญญา, liability, tax และสถานะทางกฎหมายก่อน launch | Founder + Legal |
+| D-02 | Launch area | เปิด pilot เฉพาะเขตในกรุงเทพฯ ที่ผ่านเกณฑ์ provider density และมี care ops รองรับ; ไม่เปิดทั่วกรุงเทพฯ พร้อมกัน | Accepted; ระบุรายชื่อเขตหลัง supply-density check | Product + Ops |
+| D-03 | Provider approval | เฉพาะ provider สถานะ `APPROVED` และ credential ยังไม่หมดอายุเท่านั้นที่รับงานได้; ไม่มี conditional assignment | Accepted | Clinical + Ops |
+| D-04 | Pricing | ระบบสร้าง quote จาก versioned rate card และล็อกราคาเมื่อผู้ว่าจ้างยอมรับ; provider แก้ราคาเองไม่ได้ | Accepted | Product + Finance |
+| D-05 | Payment semantics | ใช้ PSP-supported **authorization/hold → capture หรือ void; refund หลัง capture; payout หลังงานผ่านเงื่อนไข** ตาม capability จริง พร้อม internal double-entry ledger; ห้ามใช้คำว่า “escrow” ใน UX, สัญญา หรือการตลาดจน legal/PSP ยืนยัน | Accepted; PSP spike และ legal review เป็น launch gate ถ้า PSP ทำ hold ไม่ได้ให้ใช้ collect/refund flow ที่อนุมัติแล้วโดยไม่สร้าง escrow เอง | Legal + Finance |
+| D-06 | SOS/replacement hours | Pilot เปิด care ops และรับเฉพาะกะภายใน **08:00–20:00 น. (Asia/Bangkok) ทุกวัน**; แสดง SLA เฉพาะพื้นที่และเวลาที่ roster รองรับ ปุ่มโทร 1669/ผู้ติดต่อฉุกเฉินใช้ได้ตลอดโดยไม่พึ่ง backend คำขอนอกเวลาเก็บเข้าคิวและระบุชัดว่าไม่มี replacement SLA | Accepted; ต้องผ่าน staffing roster และ escalation drill ก่อน pilot | Ops |
+| D-07 | Customer app | Customer ใช้ responsive web/PWA ก่อน; provider ใช้ React Native + Expo mobile app | Accepted | Product + Engineering |
+| D-08 | Cloud region | ใช้ AWS Thailand (`ap-southeast-7`) เป็น primary region หาก capability/cost/operations spike ผ่าน มิฉะนั้นใช้ Singapore (`ap-southeast-1`) ทั้งระบบหลัง legal/data-transfer review; ไม่ทำ multi-region ใน MVP | Accepted decision rule; region spike + DPO review เป็น infrastructure gate | Engineering + DPO |
+| D-09 | ORM | เลือก Prisma หรือ Drizzle จาก spike ที่ทดสอบ PostGIS, RLS, transaction, raw SQL และ migration/rollback ด้วย schema ตัวอย่างจริง | Accepted selection rule; บันทึกผลเป็น ADR ก่อนเริ่ม schema production | Engineering |
+| D-10 | Long-term jobs | ไม่รวม recurring/long-term contract ใน MVP; รองรับเฉพาะกะรายครั้งและเลื่อนไปหลัง pilot | Accepted | Product |
+
+### Launch-gate interpretation
+
+- เริ่ม Phase 1 ได้เมื่อ workflow และ owner ของ D-01, D-05, D-06 และ D-08 ถูกกำหนดตามตารางนี้แล้ว
+- ห้าม production launch จน legal/PSP validation (D-01, D-05), staffing drill (D-06) และ region capability + DPO review (D-08) ผ่าน
+- หาก gate ใดไม่ผ่าน ให้ใช้ fallback ที่ระบุใน decision นั้นและบันทึก ADR; ห้ามขยาย scope เป็น custom escrow, 24/7 operations หรือ multi-region เพื่อแก้ปัญหาใน MVP
 
 ## 17. Architecture decision records ที่ควรสร้างต่อ
 
@@ -634,6 +643,6 @@ carespaces/
 
 ---
 
-### Recommendation
+### Recommendation adopted
 
-เริ่ม implementation เมื่อ D-01, D-05, D-06 และ D-08 ถูกตัดสินแล้วเท่านั้น เพราะทั้งสี่ข้อเปลี่ยน liability, payment workflow, availability promise และ infrastructure boundary โดยตรง ส่วน feature อื่นสามารถเดินหน้าด้วย modular monolith ตามแบบนี้ได้โดยไม่ต้องรอการออกแบบ microservices เพิ่ม
+D-01 ถึง D-10 ได้รับการรับเป็น MVP baseline แล้ว จึงเริ่ม Phase 0 และงานที่ไม่ขึ้นกับผล validation ได้ ส่วน D-01, D-05, D-06 และ D-08 เป็น **production launch gates** ตามเงื่อนไขในหัวข้อ 16 ไม่ใช่ open product decisions อีกต่อไป สถาปัตยกรรมยังคงเป็น modular monolith และไม่ต้องรอการออกแบบ microservices เพิ่ม

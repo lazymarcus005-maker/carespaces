@@ -1,0 +1,11 @@
+DROP TABLE IF EXISTS platform.outbox_event;
+DROP TABLE IF EXISTS platform.audit_event;
+DROP TABLE IF EXISTS iam.role_assignment;
+DROP TABLE IF EXISTS iam.tenant_membership;
+DROP TABLE IF EXISTS iam.tenant;
+DROP TABLE IF EXISTS iam.user_account;
+DROP TYPE IF EXISTS iam.membership_status;
+DROP TYPE IF EXISTS iam.user_status;
+DROP TYPE IF EXISTS iam.tenant_status;
+DROP TYPE IF EXISTS iam.tenant_type;
+DROP SCHEMA IF EXISTS iam;

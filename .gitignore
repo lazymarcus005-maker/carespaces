@@ -1,0 +1,11 @@
+node_modules/
+.turbo/
+.next/
+dist/
+coverage/
+*.tsbuildinfo
+.env
+.env.local
+.env.*.local
+!.env.example
+spikes/orm/prisma/generated/

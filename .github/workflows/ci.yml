@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check formatting
+        run: pnpm format:check
+
+      - name: Check generated API contract
+        run: pnpm api:check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type-check
+        run: pnpm typecheck
+
+      - name: Run fast tests
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      - name: Start PostgreSQL
+        run: pnpm db:up
+
+      - name: Run database and IAM integration tests
+        run: pnpm test:integration
+
+      - name: Show PostgreSQL logs on failure
+        if: failure()
+        run: docker compose -f infrastructure/database/compose.yaml logs postgres
+
+      - name: Stop PostgreSQL
+        if: always()
+        run: pnpm db:down

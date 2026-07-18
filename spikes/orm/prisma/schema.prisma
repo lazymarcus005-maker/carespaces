@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client"
+  output   = "./generated"
+}
+datasource db {
+  provider = "postgresql"
+}
+
+model Tenant {
+  id   String @id @db.Uuid
+  name String
+
+  patients Patient[]
+
+  @@map("tenant")
+}
+
+model Patient {
+  id          String @id @db.Uuid
+  tenantId    String @map("tenant_id") @db.Uuid
+  displayName String @map("display_name")
+  tenant      Tenant @relation(fields: [tenantId], references: [id])
+
+  @@map("patient")
+}
+
+model ProviderLocation {
+  id       String                      @id @db.Uuid
+  label    String
+  location Unsupported("geometry(Point, 4326)")
+
+  @@map("provider_location")
+}
+
+model Assignment {
+  id         String   @id @db.Uuid
+  providerId String   @map("provider_id") @db.Uuid
+  startsAt   DateTime @map("starts_at") @db.Timestamptz(6)
+  endsAt     DateTime @map("ends_at") @db.Timestamptz(6)
+  status     String
+
+  @@map("assignment")
+}
