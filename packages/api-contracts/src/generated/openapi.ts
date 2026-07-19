@@ -52,6 +52,86 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/v1/ops/tasks': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['list'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/v1/ops/tasks/{id}/claim': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['claim'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/v1/ops/tasks/{id}/reassign': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['reassign'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/v1/ops/tasks/{id}/escalate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['escalate'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/v1/ops/tasks/{id}/resolve': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['resolve'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -85,6 +165,86 @@ export interface components {
         /** @enum {string} */
         role: 'FAMILY_OWNER';
       };
+    };
+    OpsTask: {
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      tenantId: string | null;
+      taskType: string;
+      subjectType: string;
+      /** Format: uuid */
+      subjectId: string;
+      /** @enum {string} */
+      queue:
+        | 'VERIFICATION'
+        | 'CLINICAL'
+        | 'URGENT'
+        | 'INCIDENT'
+        | 'REPLACEMENT'
+        | 'DISPUTE'
+        | 'FINANCE'
+        | 'GENERAL';
+      /** @enum {string} */
+      priority: 'LOW' | 'NORMAL' | 'HIGH' | 'CRITICAL';
+      /** Format: uuid */
+      ownerUserId: string | null;
+      /** Format: date-time */
+      dueAt: string | null;
+      escalationLevel: number;
+      /** @enum {string} */
+      status: 'OPEN' | 'CLAIMED' | 'RESOLVED' | 'CANCELLED';
+      resolutionCode: string | null;
+      version: number;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt: string;
+      /** Format: date-time */
+      resolvedAt: string | null;
+    };
+    OpsTaskListResponse: {
+      actor: {
+        /** Format: uuid */
+        userId: string;
+        roles: string[];
+        queues: (
+          | 'VERIFICATION'
+          | 'CLINICAL'
+          | 'URGENT'
+          | 'INCIDENT'
+          | 'REPLACEMENT'
+          | 'DISPUTE'
+          | 'FINANCE'
+          | 'GENERAL'
+        )[];
+      };
+      tasks: components['schemas']['OpsTask'][];
+      /** Format: date-time */
+      generatedAt: string;
+    };
+    OpsTaskCommand: {
+      expectedVersion: number;
+      reasonCode: string;
+    };
+    ReassignOpsTaskRequest: {
+      expectedVersion: number;
+      reasonCode: string;
+      /** Format: uuid */
+      newOwnerUserId: string;
+    };
+    EscalateOpsTaskRequest: {
+      expectedVersion: number;
+      reasonCode: string;
+      /** @enum {string} */
+      priority?: 'LOW' | 'NORMAL' | 'HIGH' | 'CRITICAL';
+      /** Format: date-time */
+      dueAt?: string;
+    };
+    ResolveOpsTaskRequest: {
+      expectedVersion: number;
+      reasonCode: string;
+      resolutionCode: string;
     };
     ErrorResponse: {
       error: {
@@ -209,6 +369,141 @@ export interface operations {
         };
       };
       403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+    };
+  };
+  list: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['OpsTaskListResponse'];
+        };
+      };
+    };
+  };
+  claim: {
+    parameters: {
+      query?: never;
+      header: {
+        'Idempotency-Key': string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['OpsTaskCommand'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['OpsTask'];
+        };
+      };
+    };
+  };
+  reassign: {
+    parameters: {
+      query?: never;
+      header: {
+        'Idempotency-Key': string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ReassignOpsTaskRequest'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['OpsTask'];
+        };
+      };
+    };
+  };
+  escalate: {
+    parameters: {
+      query?: never;
+      header: {
+        'Idempotency-Key': string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['EscalateOpsTaskRequest'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['OpsTask'];
+        };
+      };
+    };
+  };
+  resolve: {
+    parameters: {
+      query?: never;
+      header: {
+        'Idempotency-Key': string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ResolveOpsTaskRequest'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['OpsTask'];
+        };
+      };
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      409: {
         headers: {
           [name: string]: unknown;
         };

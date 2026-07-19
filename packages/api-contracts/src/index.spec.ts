@@ -4,6 +4,7 @@ import {
   ErrorResponseSchema,
   FamilyTenantResponseSchema,
   HealthResponseSchema,
+  OpsTaskListResponseSchema,
 } from './index.js';
 
 describe('API response contracts', () => {
@@ -58,5 +59,37 @@ describe('API response contracts', () => {
         membership: { status: 'ACTIVE', role: 'FAMILY_OWNER' },
       }).success,
     ).toBe(true);
+  });
+
+  it('validates membership-scoped Ops Task projections', () => {
+    const projection = OpsTaskListResponseSchema.parse({
+      actor: {
+        userId: '01000000-0000-4000-8000-000000000003',
+        roles: ['CARE_COORDINATOR'],
+        queues: ['INCIDENT'],
+      },
+      tasks: [
+        {
+          id: '08000000-0000-4000-8000-000000000001',
+          tenantId: null,
+          taskType: 'incident.active_triage',
+          subjectType: 'incident',
+          subjectId: '38000000-0000-4000-8000-000000000001',
+          queue: 'INCIDENT',
+          priority: 'CRITICAL',
+          ownerUserId: null,
+          dueAt: null,
+          escalationLevel: 0,
+          status: 'OPEN',
+          resolutionCode: null,
+          version: 1,
+          createdAt: '2026-07-19T00:00:00.000Z',
+          updatedAt: '2026-07-19T00:00:00.000Z',
+          resolvedAt: null,
+        },
+      ],
+      generatedAt: '2026-07-19T00:00:00.000Z',
+    });
+    expect(projection.tasks).toHaveLength(1);
   });
 });

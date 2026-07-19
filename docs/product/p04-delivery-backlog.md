@@ -521,6 +521,7 @@ VAL-03/07/10
 - [x] Verify `PLT-02` scheduled deadline backend: idempotent create/cancel/fire, lease/retry/DLQ, atomic outbox command, current state/version recheck, audited stale no-op และ operational status CLI
 - [x] Verify `FND-07` versioned configuration: immutable hashed snapshots, environment scope, audited approval/activation/rollback, production four-eyes rule, secret-field guard, deadline policy resolver และ operational status CLI
 - [x] Verify `PLT-06` Ops Task core: deduplicated feature creation, constrained queue/priority/subject, privileged claim/reassign/resolve, expected-version claim race, command replay, escalation, transactional audit/state/outbox evidence และ operational status CLI
+- [x] Verify `OPS-01` unified Ops workflow: membership-scoped queue projection, role-to-queue authorization, authenticated list/claim/reassign/escalate/resolve API, atomic claim replay และ responsive Admin queue workspace
 - [ ] ปิด provider-backed acceptance ของ `IAM-01`/`IAM-03` ด้วย real IdP/JWKS/MFA sandbox และ role-action API (ส่วน `FND-08`, `PLT-04`, `IAM-02` และ `IAM-04` policy baseline verify แล้ว)
 - [x] สร้าง architecture test fixtures จาก P03 invariants: state-machine pairs, optimistic version, idempotency, event privacy, transition envelope และ integer minor units
 - [x] กำหนด `main` เป็น initial branch, เพิ่ม CI checks และใช้ reviewed SQL forward/down migrations ตาม ADR-009
@@ -530,4 +531,4 @@ VAL-03/07/10
 
 ### Recommended next action
 
-เริ่ม `OPS-01` unified Ops Task queue API/projections และ Admin workflow บน `PLT-06` core แล้วเชื่อม deadline escalation/operational failure ของ feature modules เข้ากับ task types/queues จริง พร้อมเดิน durable queue provider adapter/failure drill ของ `PLT-01` ก่อน production
+เริ่ม `OPS-02` notification intent center และเชื่อม deadline escalation/operational failure ของ feature modules เข้ากับ task types/queues จริง พร้อมเดิน durable queue provider adapter/failure drill ของ `PLT-01` ก่อน production

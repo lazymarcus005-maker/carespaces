@@ -223,6 +223,78 @@ export async function seedSynthetic(
       );
     }
 
+    const opsTasks = [
+      {
+        id: '08000000-0000-4000-8000-000000000001',
+        taskType: 'incident.active_triage',
+        subjectType: 'incident',
+        subjectId: '38000000-0000-4000-8000-000000000001',
+        queue: 'INCIDENT',
+        priority: 'CRITICAL',
+        dueInterval: '20 minutes',
+        claimed: true,
+      },
+      {
+        id: '08000000-0000-4000-8000-000000000002',
+        taskType: 'replacement.coverage_search',
+        subjectType: 'replacement_request',
+        subjectId: '38000000-0000-4000-8000-000000000002',
+        queue: 'REPLACEMENT',
+        priority: 'HIGH',
+        dueInterval: '1 hour',
+        claimed: false,
+      },
+      {
+        id: '08000000-0000-4000-8000-000000000003',
+        taskType: 'assignment.provider_cancelled',
+        subjectType: 'assignment',
+        subjectId: '38000000-0000-4000-8000-000000000003',
+        queue: 'URGENT',
+        priority: 'HIGH',
+        dueInterval: '45 minutes',
+        claimed: false,
+      },
+    ] as const;
+    for (const [index, task] of opsTasks.entries()) {
+      await client.query(
+        `INSERT INTO operations.ops_task
+         (id, task_type, subject_type, subject_id, queue, priority,
+          owner_user_id, due_at, status, source_dedupe_key, created_by_system)
+         VALUES ($1, $2, $3, $4, $5, $6, $7,
+          clock_timestamp() + $8::interval, $9, $10, 'synthetic-seed')
+         ON CONFLICT (id) DO NOTHING`,
+        [
+          task.id,
+          task.taskType,
+          task.subjectType,
+          task.subjectId,
+          task.queue,
+          task.priority,
+          task.claimed ? userIds.admin : null,
+          task.dueInterval,
+          task.claimed ? 'CLAIMED' : 'OPEN',
+          `synthetic:${task.taskType}`,
+        ],
+      );
+      await client.query(
+        `INSERT INTO platform.audit_event
+         (id, actor_user_id, action, subject_type, subject_id, reason_code,
+          correlation_id, metadata)
+         SELECT $1, $2, 'ops_task.synthetic_created', 'ops_task', $3,
+          'synthetic_local_baseline', 'synthetic-seed-v1',
+          jsonb_build_object('queue', $4::text, 'priority', $5::text)
+         FROM operations.ops_task WHERE id = $3
+         ON CONFLICT (id) DO NOTHING`,
+        [
+          `0a000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
+          userIds.admin,
+          task.id,
+          task.queue,
+          task.priority,
+        ],
+      );
+    }
+
     const deadlinePolicyValue = JSON.stringify(syntheticDeadlinePolicy);
     await client.query(
       `INSERT INTO platform.configuration_version

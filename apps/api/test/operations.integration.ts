@@ -1,5 +1,4 @@
 import { Test } from '@nestjs/testing';
-import { type INestApplication } from '@nestjs/common';
 import {
   ErrorResponseSchema,
   OpsTaskListResponseSchema,
@@ -78,8 +77,15 @@ async function main(): Promise<void> {
     .expect(200);
   const projection = OpsTaskListResponseSchema.parse(listResponse.body);
   assert(
-    projection.tasks.length === 1 && projection.tasks[0]?.id === incidentTaskId,
+    projection.tasks.some((task) => task.id === incidentTaskId) &&
+      projection.tasks.every((task) => task.queue !== 'FINANCE'),
     'queue projection exposed an unassigned finance task',
+  );
+  assert(
+    projection.tasks.every((task) =>
+      projection.actor.queues.includes(task.queue),
+    ),
+    'queue projection returned work outside the actor membership',
   );
   assert(
     projection.actor.queues.join(',') === 'GENERAL,INCIDENT,REPLACEMENT,URGENT',
@@ -120,6 +126,17 @@ async function main(): Promise<void> {
     OpsTaskSchema.parse(replay.body).version === 2,
     'claim replay changed the result',
   );
+
+  await request(application.getHttpServer())
+    .post(`/v1/ops/tasks/${incidentTaskId}/reassign`)
+    .set('authorization', 'Bearer fake:admin-001')
+    .set('idempotency-key', 'ops-api-invalid-reassign')
+    .send({
+      expectedVersion: 2,
+      reasonCode: 'invalid_handover',
+      newOwnerUserId: '01000000-0000-4000-8000-000000000001',
+    })
+    .expect(403);
 
   const stale = await request(application.getHttpServer())
     .post(`/v1/ops/tasks/${incidentTaskId}/escalate`)

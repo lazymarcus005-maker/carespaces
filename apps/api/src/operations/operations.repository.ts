@@ -1,11 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
   canManageOpsTaskQueue,
+  roleCanManageOpsTaskQueue,
   type AuthorizationContext,
 } from '@carespaces/authz';
 import {
   listOpsTasks,
   resolveOpsActorAccess,
+  resolveOpsUserAccess,
   type OpsActorAccess,
   type OpsTaskPriority,
   type OpsTaskQueue,
@@ -84,6 +86,21 @@ export class OperationsRepository {
     principal: IdentityPrincipal,
     input: CommandInput & { newOwnerUserId: string },
   ): Promise<OpsTaskRecord> {
+    const task = await this.tasks.read(input.id);
+    if (!task) throw new OpsAccessDeniedError('Ops Task is unavailable');
+    const targetAccess = await resolveOpsUserAccess(
+      this.database.pool,
+      input.newOwnerUserId,
+    );
+    if (
+      !targetAccess.some(
+        (row) =>
+          row.queue === task.queue &&
+          roleCanManageOpsTaskQueue(row.role, task.queue),
+      )
+    ) {
+      throw new OpsAccessDeniedError('New owner is not assigned to this queue');
+    }
     return this.tasks.reassign({
       ...input,
       authorization: await this.contextForTask(principal, input.id),

@@ -3,6 +3,7 @@ import {
   can,
   canManageOpsTaskQueue,
   patientProjectionFields,
+  roleCanManageOpsTaskQueue,
   type AuthorizationContext,
 } from './index.js';
 
@@ -92,6 +93,10 @@ describe('authorization policy', () => {
     expect(canManageOpsTaskQueue(coordinator, 'FINANCE')).toBe(false);
     expect(canManageOpsTaskQueue(finance, 'FINANCE')).toBe(true);
     expect(canManageOpsTaskQueue(finance, 'INCIDENT')).toBe(false);
+    expect(roleCanManageOpsTaskQueue('CARE_COORDINATOR', 'URGENT')).toBe(true);
+    expect(roleCanManageOpsTaskQueue('CARE_COORDINATOR', 'DISPUTE')).toBe(
+      false,
+    );
   });
 
   it('prevents a refund maker from approving the same request', () => {

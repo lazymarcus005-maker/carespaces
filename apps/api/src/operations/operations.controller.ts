@@ -6,6 +6,7 @@ import {
   ForbiddenException,
   Get,
   Headers,
+  HttpCode,
   Inject,
   Param,
   Post,
@@ -91,6 +92,7 @@ export class OperationsController {
   }
 
   @Post(':id/claim')
+  @HttpCode(200)
   @ApiHeader({ name: 'Idempotency-Key', required: true })
   @ApiBody({ schema: { $ref: '#/components/schemas/OpsTaskCommand' } })
   @ApiOkResponse({ schema: { $ref: '#/components/schemas/OpsTask' } })
@@ -113,6 +115,7 @@ export class OperationsController {
   }
 
   @Post(':id/reassign')
+  @HttpCode(200)
   @ApiHeader({ name: 'Idempotency-Key', required: true })
   @ApiBody({ schema: { $ref: '#/components/schemas/ReassignOpsTaskRequest' } })
   @ApiOkResponse({ schema: { $ref: '#/components/schemas/OpsTask' } })
@@ -135,6 +138,7 @@ export class OperationsController {
   }
 
   @Post(':id/escalate')
+  @HttpCode(200)
   @ApiHeader({ name: 'Idempotency-Key', required: true })
   @ApiBody({ schema: { $ref: '#/components/schemas/EscalateOpsTaskRequest' } })
   @ApiOkResponse({ schema: { $ref: '#/components/schemas/OpsTask' } })
@@ -161,6 +165,7 @@ export class OperationsController {
   }
 
   @Post(':id/resolve')
+  @HttpCode(200)
   @ApiHeader({ name: 'Idempotency-Key', required: true })
   @ApiBody({ schema: { $ref: '#/components/schemas/ResolveOpsTaskRequest' } })
   @ApiOkResponse({ schema: { $ref: '#/components/schemas/OpsTask' } })

@@ -205,6 +205,13 @@ export function canManageOpsTaskQueue(
   );
 }
 
+export function roleCanManageOpsTaskQueue(
+  role: string,
+  queue: string,
+): boolean {
+  return platformRoles.has(role) && roleQueues[role as PlatformRole].has(queue);
+}
+
 export type PatientProjectionField =
   'id' | 'displayName' | 'clinicalNote' | 'exactAddress' | 'billingStatus';
 

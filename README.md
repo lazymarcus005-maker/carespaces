@@ -108,8 +108,13 @@ pnpm ops-task:status
 `ops-task:status` displays queue/status counts, overdue and unowned work, escalation level, and oldest
 due time. It exits with code `2` when operator action is required.
 
+The Admin app at `http://localhost:3001` uses the authenticated `/v1/ops/tasks` workflow. In local
+development, `fake:admin-001` is a `CARE_COORDINATOR` with General, Incident, Replacement, and Urgent
+queue membership.
+
 ## Product documentation
 
+- [`NEXT.md`](NEXT.md) — current work-session checkpoint and exact resume objective
 - [`docs/product/idea.md`](docs/product/idea.md) — product concept
 - [`docs/product/p01-design.md`](docs/product/p01-design.md) — technology and architecture design
 - [`docs/product/p02-mvp-spec.md`](docs/product/p02-mvp-spec.md) — MVP product and functional specification

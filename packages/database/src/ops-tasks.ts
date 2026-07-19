@@ -191,6 +191,27 @@ export async function resolveOpsActorAccess(
   }));
 }
 
+export async function resolveOpsUserAccess(
+  client: EventQueryRunner,
+  userId: string,
+): Promise<OpsActorAccess[]> {
+  const result = await client.query(
+    `SELECT access.user_id, access.role, access.queue
+     FROM iam.user_account account
+     CROSS JOIN LATERAL operations.resolve_actor_access(
+       account.identity_provider, account.identity_subject
+     ) access
+     WHERE account.id = $1 AND access.user_id = account.id
+     ORDER BY access.role, access.queue`,
+    [userId],
+  );
+  return result.rows.map((row) => ({
+    userId: asString(row.user_id),
+    role: asString(row.role),
+    queue: asString(row.queue) as OpsTaskQueue,
+  }));
+}
+
 export async function listOpsTasks(
   client: EventQueryRunner,
   input: ListOpsTasksInput,

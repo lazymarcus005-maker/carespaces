@@ -102,10 +102,18 @@ describe('health endpoint', () => {
     expect(
       document.paths['/v1/identity/me']?.get?.responses['200'],
     ).toBeDefined();
+    expect(
+      document.paths['/v1/ops/tasks']?.get?.responses['200'],
+    ).toBeDefined();
+    expect(
+      document.paths['/v1/ops/tasks/{id}/claim']?.post?.responses['200'],
+    ).toBeDefined();
     expect(document.components?.schemas).toMatchObject({
       ErrorResponse: expect.any(Object),
       FamilyTenantResponse: expect.any(Object),
       HealthResponse: expect.any(Object),
+      OpsTask: expect.any(Object),
+      OpsTaskListResponse: expect.any(Object),
     });
   });
 });
