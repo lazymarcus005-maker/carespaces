@@ -7,6 +7,7 @@ export const capabilities = [
   'clinical_note.read',
   'ledger.read',
   'refund.approve',
+  'ops_task.manage',
   'audit.read',
   'audit.write',
 ] as const;
@@ -14,7 +15,14 @@ export const capabilities = [
 export type Capability = (typeof capabilities)[number];
 export type TenantRole = 'FAMILY_OWNER' | 'FAMILY_MEMBER' | 'PROVIDER';
 export type PlatformRole =
-  'PLATFORM_ADMIN' | 'CLINICAL_REVIEWER' | 'FINANCE' | 'SUPPORT';
+  | 'VERIFICATION_OFFICER'
+  | 'CARE_COORDINATOR'
+  | 'CLINICAL_REVIEWER'
+  | 'SUPPORT_OFFICER'
+  | 'DISPUTE_OFFICER'
+  | 'FINANCE_ADMIN'
+  | 'PLATFORM_ADMIN'
+  | 'SECURITY_AUDITOR';
 
 const tenantRoles = new Set<string>([
   'FAMILY_OWNER',
@@ -23,9 +31,13 @@ const tenantRoles = new Set<string>([
 ]);
 const platformRoles = new Set<string>([
   'PLATFORM_ADMIN',
+  'VERIFICATION_OFFICER',
+  'CARE_COORDINATOR',
   'CLINICAL_REVIEWER',
-  'FINANCE',
-  'SUPPORT',
+  'SUPPORT_OFFICER',
+  'DISPUTE_OFFICER',
+  'FINANCE_ADMIN',
+  'SECURITY_AUDITOR',
 ]);
 
 const roleCapabilities: Readonly<
@@ -41,21 +53,68 @@ const roleCapabilities: Readonly<
   FAMILY_MEMBER: new Set<Capability>(['tenant.read', 'patient.read']),
   PROVIDER: new Set<Capability>(['care_packet.read']),
   PLATFORM_ADMIN: new Set(capabilities),
+  VERIFICATION_OFFICER: new Set<Capability>([
+    'tenant.read',
+    'audit.read',
+    'audit.write',
+    'ops_task.manage',
+  ]),
+  CARE_COORDINATOR: new Set<Capability>([
+    'tenant.read',
+    'patient.read',
+    'audit.read',
+    'audit.write',
+    'ops_task.manage',
+  ]),
   CLINICAL_REVIEWER: new Set<Capability>([
     'tenant.read',
     'patient.read',
     'clinical_note.read',
     'audit.read',
     'audit.write',
+    'ops_task.manage',
   ]),
-  FINANCE: new Set<Capability>([
+  FINANCE_ADMIN: new Set<Capability>([
     'tenant.read',
     'ledger.read',
     'refund.approve',
     'audit.read',
     'audit.write',
+    'ops_task.manage',
   ]),
-  SUPPORT: new Set<Capability>(['tenant.read', 'audit.read', 'audit.write']),
+  SUPPORT_OFFICER: new Set<Capability>([
+    'tenant.read',
+    'audit.read',
+    'audit.write',
+    'ops_task.manage',
+  ]),
+  DISPUTE_OFFICER: new Set<Capability>([
+    'tenant.read',
+    'audit.read',
+    'audit.write',
+    'ops_task.manage',
+  ]),
+  SECURITY_AUDITOR: new Set<Capability>(['audit.read']),
+};
+
+const roleQueues: Readonly<Record<PlatformRole, ReadonlySet<string>>> = {
+  PLATFORM_ADMIN: new Set([
+    'VERIFICATION',
+    'CLINICAL',
+    'URGENT',
+    'INCIDENT',
+    'REPLACEMENT',
+    'DISPUTE',
+    'FINANCE',
+    'GENERAL',
+  ]),
+  VERIFICATION_OFFICER: new Set(['VERIFICATION']),
+  CARE_COORDINATOR: new Set(['URGENT', 'INCIDENT', 'REPLACEMENT', 'GENERAL']),
+  CLINICAL_REVIEWER: new Set(['CLINICAL', 'INCIDENT']),
+  SUPPORT_OFFICER: new Set(['INCIDENT', 'DISPUTE', 'GENERAL']),
+  DISPUTE_OFFICER: new Set(['DISPUTE']),
+  FINANCE_ADMIN: new Set(['FINANCE']),
+  SECURITY_AUDITOR: new Set(),
 };
 
 export interface AuthorizationContext {
@@ -133,6 +192,17 @@ export function can(
   }
 
   return true;
+}
+
+export function canManageOpsTaskQueue(
+  context: AuthorizationContext,
+  queue: string,
+): boolean {
+  return (
+    can(context, 'ops_task.manage') &&
+    platformRoles.has(context.role) &&
+    roleQueues[context.role as PlatformRole].has(queue)
+  );
 }
 
 export type PatientProjectionField =

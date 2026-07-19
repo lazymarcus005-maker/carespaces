@@ -4,7 +4,10 @@ import {
   FamilyTenantResponseSchema,
   type FamilyTenantResponse,
 } from '@carespaces/api-contracts';
-import { appendAuditedStateTransition } from '@carespaces/database';
+import {
+  appendAuditedStateTransition,
+  enqueueOutboxEvent,
+} from '@carespaces/database';
 import type { PoolClient } from 'pg';
 import { DatabaseService } from '../database/database.service';
 import type { IdentityPrincipal } from './identity.types';
@@ -104,7 +107,6 @@ export class IdentityRepository {
         },
         membership: { status: 'ACTIVE', role: 'FAMILY_OWNER' },
       });
-      const eventId = randomUUID();
       await appendAuditedStateTransition(
         client,
         {
@@ -118,19 +120,17 @@ export class IdentityRepository {
           resultingVersion: 1,
           metadata: { source: 'api' },
         },
-        { nextId: () => eventId },
+        { nextId: () => randomUUID() },
       );
-      await client.query(
-        `INSERT INTO platform.outbox_event
-         (id, aggregate_type, aggregate_id, event_type, payload, correlation_id)
-         VALUES ($1, 'tenant', $2, 'tenant.created.v1', $3::jsonb, $4)`,
-        [
-          eventId,
-          tenantId,
-          JSON.stringify({ tenantId, userId }),
-          input.correlationId,
-        ],
-      );
+      await enqueueOutboxEvent(client, {
+        id: randomUUID(),
+        tenantId,
+        aggregateType: 'tenant',
+        aggregateId: tenantId,
+        eventType: 'tenant.created.v1',
+        payload: { tenantId, userId },
+        correlationId: input.correlationId,
+      });
       await client.query(
         `INSERT INTO platform.idempotency_record
          (scope, key, request_hash, response, expires_at)

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   can,
+  canManageOpsTaskQueue,
   patientProjectionFields,
   type AuthorizationContext,
 } from './index.js';
@@ -17,7 +18,7 @@ const finance: AuthorizationContext = {
   actorUserId: 'finance-1',
   actorTenantId: 'platform',
   resourceTenantId: 'tenant-1',
-  role: 'FINANCE',
+  role: 'FINANCE_ADMIN',
   mfaVerified: true,
   privilegedSession: true,
 };
@@ -75,6 +76,22 @@ describe('authorization policy', () => {
     const clinical = { ...finance, role: 'CLINICAL_REVIEWER' };
     expect(can(finance, 'clinical_note.read')).toBe(false);
     expect(can(clinical, 'ledger.read')).toBe(false);
+  });
+
+  it('allows privileged operations roles to manage task queues', () => {
+    expect(can(finance, 'ops_task.manage')).toBe(true);
+    expect(
+      can({ ...finance, role: 'SUPPORT_OFFICER' }, 'ops_task.manage'),
+    ).toBe(true);
+    expect(can({ ...owner }, 'ops_task.manage')).toBe(false);
+  });
+
+  it('limits operations roles to their queue families', () => {
+    const coordinator = { ...finance, role: 'CARE_COORDINATOR' };
+    expect(canManageOpsTaskQueue(coordinator, 'INCIDENT')).toBe(true);
+    expect(canManageOpsTaskQueue(coordinator, 'FINANCE')).toBe(false);
+    expect(canManageOpsTaskQueue(finance, 'FINANCE')).toBe(true);
+    expect(canManageOpsTaskQueue(finance, 'INCIDENT')).toBe(false);
   });
 
   it('prevents a refund maker from approving the same request', () => {

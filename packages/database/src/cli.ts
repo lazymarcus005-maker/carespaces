@@ -16,8 +16,8 @@ try {
   } else if (command === 'status') {
     console.table(await migrationStatus(pool));
   } else if (command === 'seed') {
-    await seedSynthetic(pool, databaseUrl);
-    console.log('Synthetic seed applied.');
+    const summary = await seedSynthetic(pool, databaseUrl);
+    console.log('Synthetic data ingestion complete.', summary);
   } else {
     throw new Error('Usage: cli.ts <up|down|status|seed>');
   }

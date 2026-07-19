@@ -35,7 +35,7 @@ async function main(): Promise<void> {
 
   const applied = await migrateUp(pool);
   assert(
-    applied.length === 4 && applied[0] === '0001_foundation',
+    applied.length === 9 && applied[0] === '0001_foundation',
     'forward migration failed',
   );
   const status = await migrationStatus(pool);
@@ -141,8 +141,28 @@ async function main(): Promise<void> {
 
   const rolledBack = await rollbackLatest(pool);
   assert(
-    rolledBack === '0004_privileged_audit_projection',
+    rolledBack === '0009_ops_queue_access',
     'rollback did not select the latest migration',
+  );
+  assert(
+    (await rollbackLatest(pool)) === '0008_ops_task_core',
+    'Ops Task core migration did not follow queue access rollback',
+  );
+  assert(
+    (await rollbackLatest(pool)) === '0007_versioned_configuration',
+    'configuration migration did not follow Ops Task rollback',
+  );
+  assert(
+    (await rollbackLatest(pool)) === '0006_scheduled_deadline_service',
+    'deadline migration did not follow configuration rollback',
+  );
+  assert(
+    (await rollbackLatest(pool)) === '0005_inbox_outbox_backbone',
+    'event backbone rollback did not run after the deadline migration',
+  );
+  assert(
+    (await rollbackLatest(pool)) === '0004_privileged_audit_projection',
+    'audit projection rollback did not run after the event backbone migration',
   );
   assert(
     (await rollbackLatest(pool)) === '0003_audit_state_transition',
@@ -166,7 +186,7 @@ async function main(): Promise<void> {
 
   const reapplied = await migrateUp(pool);
   assert(
-    reapplied.length === 4,
+    reapplied.length === 9,
     'restore rehearsal could not reapply migration',
   );
   await pool.end();
@@ -175,7 +195,7 @@ async function main(): Promise<void> {
   await cleanup.query(`DROP DATABASE IF EXISTS ${testDatabase} WITH (FORCE)`);
   await cleanup.end();
   console.log(
-    'FND-04/PLT-04 passed: forward, ledger, seed guard, RLS, privileged audit read, rollback and restore rehearsal.',
+    'FND-04/FND-07/PLT-01/PLT-02/PLT-04/PLT-06/OPS-01 passed: forward, ledger, seed guard, RLS, versioned configuration, async/deadline/Ops Task backbone, queue access projection, privileged audit read, rollback and restore rehearsal.',
   );
 }
 

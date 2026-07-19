@@ -21,13 +21,14 @@ export class FakeIdentityService implements IdentityProvider {
     const match = authorization ? FAKE_TOKEN.exec(authorization) : null;
     if (!match?.[1])
       throw new UnauthorizedException('A valid bearer token is required');
+    const privilegedFixture = match[1] === 'admin-001';
     return {
       provider: 'fake',
       subject: match[1],
       sessionId: `fake:${match[1]}`,
       contactVerified: true,
-      mfaVerified: false,
-      privilegedSession: false,
+      mfaVerified: privilegedFixture,
+      privilegedSession: privilegedFixture,
       authenticatedAt: new Date(),
     };
   }

@@ -1,14 +1,31 @@
 import { Test } from '@nestjs/testing';
-import type { INestApplication } from '@nestjs/common';
+import { Controller, Get, type INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   ErrorResponseSchema,
   HealthResponseSchema,
 } from '@carespaces/api-contracts';
+import {
+  IdempotencyRequestConflictError,
+  StaleVersionError,
+} from '@carespaces/database';
 import { AppModule } from '../src/app.module';
 import { configureApplication } from '../src/configure-application';
 import { createOpenApiDocument } from '../src/openapi';
+
+@Controller('test-conflicts')
+class TestConflictController {
+  @Get('idempotency')
+  idempotency(): never {
+    throw new IdempotencyRequestConflictError();
+  }
+
+  @Get('version')
+  version(): never {
+    throw new StaleVersionError(2, 3);
+  }
+}
 
 describe('health endpoint', () => {
   let app: INestApplication;
@@ -16,6 +33,7 @@ describe('health endpoint', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
+      controllers: [TestConflictController],
     }).compile();
     app = moduleRef.createNestApplication();
     configureApplication(app);
@@ -54,6 +72,25 @@ describe('health endpoint', () => {
       },
     });
   });
+
+  it.each([
+    ['idempotency', 'IDEMPOTENCY_KEY_REUSED'],
+    ['version', 'STALE_VERSION'],
+  ])(
+    'maps %s command conflicts to a stable 409 response',
+    async (path, code) => {
+      const response = await request(app.getHttpServer())
+        .get(`/v1/test-conflicts/${path}`)
+        .set('x-request-id', `conflict-${path}`)
+        .expect(409);
+
+      expect(ErrorResponseSchema.parse(response.body).error).toMatchObject({
+        code,
+        requestId: `conflict-${path}`,
+        status: 409,
+      });
+    },
+  );
 
   it('publishes response schemas for every foundation endpoint', () => {
     const document = createOpenApiDocument(app);

@@ -17,6 +17,9 @@ importers:
       '@prisma/client':
         specifier: 7.8.0
         version: 7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@5.9.3))(typescript@5.9.3)
+      '@types/node':
+        specifier: ^22.20.1
+        version: 22.20.1
       '@types/pg':
         specifier: ^8.15.6
         version: 8.20.0
@@ -93,6 +96,9 @@ importers:
       '@carespaces/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@carespaces/operations':
+        specifier: workspace:*
+        version: link:../../packages/operations
       '@nestjs/common':
         specifier: 11.1.28
         version: 11.1.28(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -168,6 +174,40 @@ importers:
         specifier: ^4.0.15
         version: 4.1.10(@types/node@22.20.1)(vite@8.1.5(@types/node@22.20.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1))
 
+  apps/worker:
+    dependencies:
+      '@carespaces/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@carespaces/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@carespaces/eventing':
+        specifier: workspace:*
+        version: link:../../packages/eventing
+      '@carespaces/operations':
+        specifier: workspace:*
+        version: link:../../packages/operations
+      pg:
+        specifier: ^8.22.0
+        version: 8.22.0
+    devDependencies:
+      '@carespaces/authz':
+        specifier: workspace:*
+        version: link:../../packages/authz
+      '@types/node':
+        specifier: ^22.19.1
+        version: 22.20.1
+      '@types/pg':
+        specifier: ^8.20.0
+        version: 8.20.0
+      tsx:
+        specifier: ^4.21.0
+        version: 4.23.1
+      vitest:
+        specifier: ^4.1.10
+        version: 4.1.10(@types/node@22.20.1)(vite@8.1.5(@types/node@22.20.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1))
+
   packages/api-contracts:
     dependencies:
       openapi-fetch:
@@ -187,11 +227,65 @@ importers:
         specifier: ^4.1.10
         version: 4.1.10(@types/node@22.20.1)(vite@8.1.5(@types/node@22.20.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1))
 
+  packages/config:
+    dependencies:
+      '@carespaces/database':
+        specifier: workspace:*
+        version: link:../database
+      '@carespaces/eventing':
+        specifier: workspace:*
+        version: link:../eventing
+      pg:
+        specifier: ^8.22.0
+        version: 8.22.0
+    devDependencies:
+      '@types/pg':
+        specifier: ^8.20.0
+        version: 8.20.0
+      vitest:
+        specifier: ^4.1.10
+        version: 4.1.10(@types/node@22.20.1)(vite@8.1.5(@types/node@22.20.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1))
+
   packages/database:
     dependencies:
       drizzle-orm:
         specifier: 0.45.2
         version: 0.45.2(@electric-sql/pglite@0.4.1)(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@5.9.3))(typescript@5.9.3))(@types/pg@8.20.0)(mysql2@3.15.3)(pg@8.22.0)(postgres@3.4.9)(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@5.9.3))
+      pg:
+        specifier: ^8.22.0
+        version: 8.22.0
+    devDependencies:
+      '@types/pg':
+        specifier: ^8.20.0
+        version: 8.20.0
+      vitest:
+        specifier: ^4.1.10
+        version: 4.1.10(@types/node@22.20.1)(vite@8.1.5(@types/node@22.20.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1))
+
+  packages/eventing:
+    dependencies:
+      '@carespaces/database':
+        specifier: workspace:*
+        version: link:../database
+      pg:
+        specifier: ^8.22.0
+        version: 8.22.0
+    devDependencies:
+      '@types/pg':
+        specifier: ^8.20.0
+        version: 8.20.0
+      vitest:
+        specifier: ^4.1.10
+        version: 4.1.10(@types/node@22.20.1)(vite@8.1.5(@types/node@22.20.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1))
+
+  packages/operations:
+    dependencies:
+      '@carespaces/authz':
+        specifier: workspace:*
+        version: link:../authz
+      '@carespaces/database':
+        specifier: workspace:*
+        version: link:../database
       pg:
         specifier: ^8.22.0
         version: 8.22.0

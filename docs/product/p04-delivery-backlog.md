@@ -515,6 +515,12 @@ VAL-03/07/10
 - [x] สร้าง IAM walking skeleton baseline ครอบคลุม fake auth, family tenant, membership, tenant isolation, audit, outbox และ idempotent retry
 - [x] Scaffold `FND-08` deterministic test harness: shared clock/UUID fixtures, fake IdP helper, PSP/notification/maps adapters และ package-level regression tests
 - [x] Verify `PLT-04` append-only audit/state-transition writer, privileged bounded query/CSV export, metadata redaction, dedicated read role และ traced read/export evidence
+- [x] Verify `PLT-05` transaction-scoped idempotent command execution, canonical request hashing, same-result concurrent replay, configurable retention และ stable expected-version conflict response
+- [x] Scaffold `PLT-01` inbox/outbox persistence backbone: event envelope version, inbox dedupe, lease-based claim, retry metadata และ dead-letter status helpers
+- [x] Verify `PLT-01` local publisher/consumer worker: at-least-once envelope, inbox dedupe, retry/DLQ, audited replay และ PostgreSQL integration evidence (durable provider adapter ยังคงเป็น production gate)
+- [x] Verify `PLT-02` scheduled deadline backend: idempotent create/cancel/fire, lease/retry/DLQ, atomic outbox command, current state/version recheck, audited stale no-op และ operational status CLI
+- [x] Verify `FND-07` versioned configuration: immutable hashed snapshots, environment scope, audited approval/activation/rollback, production four-eyes rule, secret-field guard, deadline policy resolver และ operational status CLI
+- [x] Verify `PLT-06` Ops Task core: deduplicated feature creation, constrained queue/priority/subject, privileged claim/reassign/resolve, expected-version claim race, command replay, escalation, transactional audit/state/outbox evidence และ operational status CLI
 - [ ] ปิด provider-backed acceptance ของ `IAM-01`/`IAM-03` ด้วย real IdP/JWKS/MFA sandbox และ role-action API (ส่วน `FND-08`, `PLT-04`, `IAM-02` และ `IAM-04` policy baseline verify แล้ว)
 - [x] สร้าง architecture test fixtures จาก P03 invariants: state-machine pairs, optimistic version, idempotency, event privacy, transition envelope และ integer minor units
 - [x] กำหนด `main` เป็น initial branch, เพิ่ม CI checks และใช้ reviewed SQL forward/down migrations ตาม ADR-009
@@ -524,4 +530,4 @@ VAL-03/07/10
 
 ### Recommended next action
 
-ปิด acceptance ที่เหลือของ `FND-08 + PLT-04 + IAM-01–04` โดยเริ่มจาก deterministic test fixtures และ audit/state-transition writer ที่ใช้ซ้ำได้ จากนั้นจึงเริ่ม feature domain เพื่อให้ทุก vertical slice มี contract test, authorization และ audit baseline ตั้งแต่แรก
+เริ่ม `OPS-01` unified Ops Task queue API/projections และ Admin workflow บน `PLT-06` core แล้วเชื่อม deadline escalation/operational failure ของ feature modules เข้ากับ task types/queues จริง พร้อมเดิน durable queue provider adapter/failure drill ของ `PLT-01` ก่อน production

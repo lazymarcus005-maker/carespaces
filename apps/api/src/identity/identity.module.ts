@@ -13,5 +13,6 @@ import { IdentityRepository } from './identity.repository';
     IdentityRepository,
     { provide: IDENTITY_PROVIDER, useExisting: FakeIdentityService },
   ],
+  exports: [AuthenticationGuard, IDENTITY_PROVIDER],
 })
 export class IdentityModule {}

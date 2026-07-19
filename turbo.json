@@ -8,7 +8,13 @@
     "dev": {
       "cache": false,
       "persistent": true,
-      "env": ["PORT", "DATABASE_URL", "DATABASE_POOL_SIZE", "NODE_ENV"]
+      "env": [
+        "PORT",
+        "DATABASE_URL",
+        "DATABASE_POOL_SIZE",
+        "NODE_ENV",
+        "CONFIGURATION_ENVIRONMENT"
+      ]
     },
     "lint": {
       "dependsOn": ["^lint"]

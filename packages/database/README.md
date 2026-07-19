@@ -6,6 +6,9 @@ Backend-only Drizzle schemas, PostgreSQL migration tooling and synthetic develop
 
 - `iam` — user identity mapping, tenants, memberships and role assignments
 - `platform` — migration ledger, append-only audit events and transactional outbox
+- `platform.scheduled_deadline` — idempotent durable timers with lease, retry and dead-letter state
+- `platform.configuration_version` — hashed environment-scoped configuration snapshots and lifecycle state
+- `operations.ops_task` — deduplicated queue work with optimistic ownership, escalation and resolution
 - Future domain modules own their own PostgreSQL schemas and may reference another schema only through reviewed foreign keys or stable IDs.
 
 Client applications must consume API contracts and must not import this package or inferred database row types.

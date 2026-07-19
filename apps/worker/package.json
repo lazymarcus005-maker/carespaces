@@ -1,0 +1,32 @@
+{
+  "name": "@carespaces/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "config:status": "tsx src/config-status.ts",
+    "deadline:status": "tsx src/deadline-status.ts",
+    "dev": "tsx watch src/main.ts",
+    "lint": "eslint src test",
+    "ops-task:status": "tsx src/ops-task-status.ts",
+    "replay": "tsx src/replay.ts",
+    "start": "node dist/main.js",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@carespaces/config": "workspace:*",
+    "@carespaces/database": "workspace:*",
+    "@carespaces/eventing": "workspace:*",
+    "@carespaces/operations": "workspace:*",
+    "pg": "^8.22.0"
+  },
+  "devDependencies": {
+    "@carespaces/authz": "workspace:*",
+    "@types/node": "^22.19.1",
+    "@types/pg": "^8.20.0",
+    "tsx": "^4.21.0",
+    "vitest": "^4.1.10"
+  }
+}

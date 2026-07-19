@@ -44,7 +44,9 @@ async function loadMigrations(): Promise<MigrationFile[]> {
         );
         return {
           id,
-          checksum: createHash('sha256').update(upSql).digest('hex'),
+          checksum: createHash('sha256')
+            .update(upSql.replace(/\r\n/g, '\n'))
+            .digest('hex'),
           upSql,
           downSql,
         };
