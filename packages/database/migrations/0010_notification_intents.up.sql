@@ -65,16 +65,6 @@ CREATE TABLE notifications.notification_intent (
   )
 );
 
-CREATE INDEX notification_intent_claim_idx
-  ON notifications.notification_intent(next_attempt_at, notifications.due_priority(notification_class))
-  WHERE status IN ('PENDING', 'LEASED') AND terminal_failed_at IS NULL;
-CREATE INDEX notification_intent_subject_idx
-  ON notifications.notification_intent(subject_type, subject_id, created_at);
-CREATE INDEX notification_intent_recipient_idx
-  ON notifications.notification_intent(recipient_user_id, status);
-CREATE INDEX notification_intent_class_idx
-  ON notifications.notification_intent(notification_class, status);
-
 CREATE FUNCTION notifications.due_priority(input_class text)
 RETURNS integer
 LANGUAGE sql
@@ -86,6 +76,16 @@ AS $$
     ELSE 3
   END
 $$;
+
+CREATE INDEX notification_intent_claim_idx
+  ON notifications.notification_intent(next_attempt_at, notifications.due_priority(notification_class))
+  WHERE status IN ('PENDING', 'LEASED') AND terminal_failed_at IS NULL;
+CREATE INDEX notification_intent_subject_idx
+  ON notifications.notification_intent(subject_type, subject_id, created_at);
+CREATE INDEX notification_intent_recipient_idx
+  ON notifications.notification_intent(recipient_user_id, status);
+CREATE INDEX notification_intent_class_idx
+  ON notifications.notification_intent(notification_class, status);
 
 CREATE TABLE notifications.notification_delivery_attempt (
   id uuid PRIMARY KEY,
