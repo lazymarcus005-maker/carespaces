@@ -9,6 +9,7 @@
     "deadline:status": "tsx src/deadline-status.ts",
     "dev": "tsx watch src/main.ts",
     "lint": "eslint src test",
+    "notification:status": "tsx src/notification-status.ts",
     "ops-task:status": "tsx src/ops-task-status.ts",
     "replay": "tsx src/replay.ts",
     "start": "node dist/main.js",
@@ -19,6 +20,7 @@
     "@carespaces/config": "workspace:*",
     "@carespaces/database": "workspace:*",
     "@carespaces/eventing": "workspace:*",
+    "@carespaces/notifications": "workspace:*",
     "@carespaces/operations": "workspace:*",
     "pg": "^8.22.0"
   },

@@ -52,6 +52,54 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/v1/notifications/intents': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['listIntents'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/v1/notifications/intents/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['readIntent'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/v1/notifications/intents/{id}/attempts': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations['listAttempts'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/v1/ops/tasks': {
     parameters: {
       query?: never;
@@ -246,6 +294,86 @@ export interface components {
       reasonCode: string;
       resolutionCode: string;
     };
+    NotificationIntent: {
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      tenantId: string | null;
+      /** @enum {string} */
+      notificationClass:
+        | 'incident_ack'
+        | 'sos'
+        | 'credential_expiry_block'
+        | 'replacement_failed'
+        | 'shift_reminder'
+        | 'reservation_expiry'
+        | 'payment_expiry'
+        | 'customer_approval_reminder'
+        | 'dispute_update'
+        | 'payout_retry'
+        | 'system';
+      /** @enum {string} */
+      channel: 'push' | 'sms' | 'email' | 'in_app';
+      subjectType: string;
+      /** Format: uuid */
+      subjectId: string;
+      /** Format: uuid */
+      recipientUserId: string | null;
+      recipientRef: string;
+      bodyRedacted: string;
+      correlationId: string;
+      /** @enum {string} */
+      status:
+        'PENDING' | 'LEASED' | 'DELIVERED' | 'TERMINAL_FAILED' | 'CANCELLED';
+      attempts: number;
+      /** Format: date-time */
+      nextAttemptAt: string;
+      /** Format: date-time */
+      deliveredAt: string | null;
+      /** Format: date-time */
+      terminalFailedAt: string | null;
+      lastError: string | null;
+      /** Format: date-time */
+      acknowledgedAt: string | null;
+      /** Format: uuid */
+      opsTaskId: string | null;
+      version: number;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    NotificationAttempt: {
+      /** Format: uuid */
+      id: string;
+      /** Format: uuid */
+      intentId: string;
+      attemptNumber: number;
+      /** @enum {string} */
+      channel: 'push' | 'sms' | 'email' | 'in_app';
+      adapterName: string;
+      /** @enum {string} */
+      status: 'FIRED' | 'FAILED' | 'DEAD_LETTER';
+      providerMessageRef: string | null;
+      errorClass: string | null;
+      errorMessage: string | null;
+      /** Format: date-time */
+      startedAt: string;
+      /** Format: date-time */
+      completedAt: string | null;
+    };
+    NotificationIntentListResponse: {
+      intents: components['schemas']['NotificationIntent'][];
+      /** Format: date-time */
+      generatedAt: string;
+    };
+    NotificationAttemptListResponse: {
+      /** Format: uuid */
+      intentId: string;
+      attempts: components['schemas']['NotificationAttempt'][];
+      /** Format: date-time */
+      generatedAt: string;
+    };
     ErrorResponse: {
       error: {
         code: string;
@@ -374,6 +502,63 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+    };
+  };
+  listIntents: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['NotificationIntentListResponse'];
+        };
+      };
+    };
+  };
+  readIntent: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['NotificationIntent'];
+        };
+      };
+    };
+  };
+  listAttempts: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['NotificationAttemptListResponse'];
         };
       };
     };

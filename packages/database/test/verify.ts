@@ -35,7 +35,7 @@ async function main(): Promise<void> {
 
   const applied = await migrateUp(pool);
   assert(
-    applied.length === 9 && applied[0] === '0001_foundation',
+    applied.length === 10 && applied[0] === '0001_foundation',
     'forward migration failed',
   );
   const status = await migrationStatus(pool);
@@ -68,6 +68,37 @@ async function main(): Promise<void> {
     'SELECT count(*) FROM iam.tenant',
   );
   assert(seeded.rows[0]?.count === '1', 'synthetic seed was not applied');
+
+  const notificationTemplates = await pool.query<{ count: string }>(
+    'SELECT count(*)::text AS count FROM notifications.notification_template',
+  );
+  assert(
+    Number(notificationTemplates.rows[0]?.count) >= 2,
+    'synthetic notification templates were not seeded',
+  );
+  const notificationIntents = await pool.query<{ count: string }>(
+    'SELECT count(*)::text AS count FROM notifications.notification_intent',
+  );
+  assert(
+    Number(notificationIntents.rows[0]?.count) >= 2,
+    'synthetic notification intents were not seeded',
+  );
+  const acknowledgedIntents = await pool.query<{ count: string }>(
+    `SELECT count(*)::text AS count FROM notifications.notification_intent
+     WHERE acknowledged_at IS NOT NULL`,
+  );
+  assert(
+    acknowledgedIntents.rows[0]?.count === '0',
+    'synthetic notification intents exposed an acknowledgement timestamp (delivery ≠ ack)',
+  );
+  const notificationPolicy = await pool.query<{ count: string }>(
+    `SELECT count(*)::text AS count FROM platform.configuration_version
+     WHERE config_key = 'platform.notifications' AND environment = 'development'`,
+  );
+  assert(
+    notificationPolicy.rows[0]?.count === '1',
+    'synthetic notification policy configuration was not seeded',
+  );
 
   await pool.query(`
     INSERT INTO iam.tenant (id, display_name, created_by_user_id)
@@ -141,8 +172,12 @@ async function main(): Promise<void> {
 
   const rolledBack = await rollbackLatest(pool);
   assert(
-    rolledBack === '0009_ops_queue_access',
-    'rollback did not select the latest migration',
+    rolledBack === '0010_notification_intents',
+    'rollback did not select the latest notification migration',
+  );
+  assert(
+    (await rollbackLatest(pool)) === '0009_ops_queue_access',
+    'rollback did not select the ops queue access migration after notification rollback',
   );
   assert(
     (await rollbackLatest(pool)) === '0008_ops_task_core',
@@ -186,7 +221,7 @@ async function main(): Promise<void> {
 
   const reapplied = await migrateUp(pool);
   assert(
-    reapplied.length === 9,
+    reapplied.length === 10,
     'restore rehearsal could not reapply migration',
   );
   await pool.end();
@@ -195,7 +230,7 @@ async function main(): Promise<void> {
   await cleanup.query(`DROP DATABASE IF EXISTS ${testDatabase} WITH (FORCE)`);
   await cleanup.end();
   console.log(
-    'FND-04/FND-07/PLT-01/PLT-02/PLT-04/PLT-06/OPS-01 passed: forward, ledger, seed guard, RLS, versioned configuration, async/deadline/Ops Task backbone, queue access projection, privileged audit read, rollback and restore rehearsal.',
+    'FND-04/FND-07/PLT-01/PLT-02/PLT-04/PLT-06/OPS-01/OPS-02 passed: forward, ledger, seed guard, RLS, versioned configuration, async/deadline/Ops Task backbone, queue access projection, notification intents, privileged audit read, rollback and restore rehearsal.',
   );
 }
 

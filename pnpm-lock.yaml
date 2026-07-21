@@ -102,6 +102,9 @@ importers:
       '@carespaces/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@carespaces/notifications':
+        specifier: workspace:*
+        version: link:../../packages/notifications
       '@carespaces/operations':
         specifier: workspace:*
         version: link:../../packages/operations
@@ -191,6 +194,9 @@ importers:
       '@carespaces/eventing':
         specifier: workspace:*
         version: link:../../packages/eventing
+      '@carespaces/notifications':
+        specifier: workspace:*
+        version: link:../../packages/notifications
       '@carespaces/operations':
         specifier: workspace:*
         version: link:../../packages/operations
@@ -269,6 +275,22 @@ importers:
         version: 4.1.10(@types/node@22.20.1)(vite@8.1.5(@types/node@22.20.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1))
 
   packages/eventing:
+    dependencies:
+      '@carespaces/database':
+        specifier: workspace:*
+        version: link:../database
+      pg:
+        specifier: ^8.22.0
+        version: 8.22.0
+    devDependencies:
+      '@types/pg':
+        specifier: ^8.20.0
+        version: 8.20.0
+      vitest:
+        specifier: ^4.1.10
+        version: 4.1.10(@types/node@22.20.1)(vite@8.1.5(@types/node@22.20.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1))
+
+  packages/notifications:
     dependencies:
       '@carespaces/database':
         specifier: workspace:*

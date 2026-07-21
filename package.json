@@ -31,12 +31,15 @@
     "format": "prettier --write \"{apps,packages,spikes,scripts}/**/*.{ts,tsx,css,json,mjs}\" \"{infrastructure,.github}/**/*.{yaml,yml}\" \"*.{json,mjs,yaml}\"",
     "format:check": "prettier --check \"{apps,packages,spikes,scripts}/**/*.{ts,tsx,css,json,mjs}\" \"{infrastructure,.github}/**/*.{yaml,yml}\" \"*.{json,mjs,yaml}\"",
     "iam:verify": "tsx --tsconfig apps/api/tsconfig.json apps/api/test/identity.integration.ts",
+    "notification:status": "pnpm --filter @carespaces/worker notification:status",
+    "notification:verify": "tsx --tsconfig apps/worker/tsconfig.json apps/worker/test/notification.integration.ts",
+    "notifications-api:verify": "tsx --tsconfig apps/api/tsconfig.json apps/api/test/notifications.integration.ts",
     "ops-task:status": "pnpm --filter @carespaces/worker ops-task:status",
     "ops-task:verify": "tsx --tsconfig apps/worker/tsconfig.json apps/worker/test/ops-task.integration.ts",
     "ops-api:verify": "tsx --tsconfig apps/api/tsconfig.json apps/api/test/operations.integration.ts",
     "lint": "turbo run lint && eslint spikes/**/*.ts scripts/**/*.ts",
     "test": "turbo run test",
-    "test:integration": "pnpm db:verify && pnpm iam:verify && pnpm event:verify && pnpm deadline:verify && pnpm config:verify && pnpm ops-task:verify && pnpm ops-api:verify",
+    "test:integration": "pnpm db:verify && pnpm iam:verify && pnpm event:verify && pnpm deadline:verify && pnpm config:verify && pnpm ops-task:verify && pnpm ops-api:verify && pnpm notification:verify && pnpm notifications-api:verify",
     "typecheck": "turbo run typecheck && pnpm db:generate && tsc -p spikes/orm/tsconfig.json --noEmit && tsc -p scripts/tsconfig.json --noEmit"
   },
   "devDependencies": {

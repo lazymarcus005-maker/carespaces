@@ -6,6 +6,7 @@ export * from './deadlines.js';
 export * from './errors.js';
 export * from './events.js';
 export * from './migrator.js';
+export * from './notifications.js';
 export * from './ops-tasks.js';
 export * from './schema/index.js';
 export * from './seed.js';

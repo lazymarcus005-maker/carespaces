@@ -14,6 +14,7 @@
     "@carespaces/api-contracts": "workspace:*",
     "@carespaces/authz": "workspace:*",
     "@carespaces/database": "workspace:*",
+    "@carespaces/notifications": "workspace:*",
     "@carespaces/operations": "workspace:*",
     "@nestjs/common": "11.1.28",
     "@nestjs/core": "11.1.28",

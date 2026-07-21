@@ -8,6 +8,7 @@ import {
 } from '@carespaces/api-contracts';
 import {
   AlertTriangle,
+  Bell,
   Check,
   CheckCircle2,
   ChevronRight,
@@ -20,6 +21,7 @@ import {
   ShieldAlert,
   UserRoundCheck,
 } from 'lucide-react';
+import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { adminHomeContent } from './page-content';
 
@@ -203,6 +205,10 @@ export function OpsWorkspace() {
               </button>
             );
           })}
+          <Link className="nav-item" href="/notifications">
+            <Bell size={17} />
+            <span>Notifications</span>
+          </Link>
         </nav>
         <div className="operator">
           <span>AP</span>

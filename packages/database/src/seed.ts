@@ -80,6 +80,69 @@ export const syntheticDeadlinePolicy = {
   },
 } as const;
 
+export const syntheticNotificationPolicy = {
+  channels: {
+    push: { enabled: true, maxAttempts: 5, retryAfterMs: 60_000 },
+    sms: { enabled: true, maxAttempts: 5, retryAfterMs: 60_000 },
+    email: { enabled: true, maxAttempts: 5, retryAfterMs: 60_000 },
+    in_app: { enabled: true, maxAttempts: 5, retryAfterMs: 60_000 },
+  },
+  criticalClasses: [
+    'incident_ack',
+    'sos',
+    'credential_expiry_block',
+    'replacement_failed',
+  ],
+} as const;
+
+export const syntheticNotificationTemplates = [
+  {
+    id: '91000000-0000-4000-8000-000000000001',
+    key: 'incident.ack_required',
+    notificationClass: 'incident_ack',
+    channel: 'push',
+    displayName: 'Incident acknowledgement required',
+    bodyTemplate: 'Incident {{incidentId}} requires acknowledgement',
+    isCritical: true,
+  },
+  {
+    id: '91000000-0000-4000-8000-000000000002',
+    key: 'shift.upcoming_reminder',
+    notificationClass: 'shift_reminder',
+    channel: 'in_app',
+    displayName: 'Shift reminder',
+    bodyTemplate: 'Shift {{shiftId}} starts soon',
+    isCritical: false,
+  },
+] as const;
+
+export const syntheticNotificationIntents = [
+  {
+    id: '90000000-0000-4000-8000-000000000001',
+    templateId: '91000000-0000-4000-8000-000000000001',
+    notificationClass: 'incident_ack',
+    channel: 'push',
+    subjectType: 'incident',
+    subjectId: '38000000-0000-4000-8000-000000000001',
+    recipientRef: 'on-call-admin',
+    bodyRedacted: 'Incident ACK required (synthetic)',
+    correlationId: 'synthetic-seed-v1',
+    sourceDedupeKey: 'synthetic:incident-1:ack-notification',
+  },
+  {
+    id: '90000000-0000-4000-8000-000000000002',
+    templateId: '91000000-0000-4000-8000-000000000002',
+    notificationClass: 'shift_reminder',
+    channel: 'in_app',
+    subjectType: 'shift',
+    subjectId: '32000000-0000-4000-8000-000000000001',
+    recipientRef: 'provider-001',
+    bodyRedacted: 'Shift starts in 1 hour (synthetic)',
+    correlationId: 'synthetic-seed-v1',
+    sourceDedupeKey: 'synthetic:shift-1:reminder',
+  },
+] as const;
+
 export interface SyntheticSeedSummary {
   tenantId: string;
   identitySubjects: string[];
@@ -312,6 +375,103 @@ export async function seedSynthetic(
         '07000000-0000-4000-8000-000000000001',
         deadlinePolicyValue,
         configurationValueHash(syntheticDeadlinePolicy),
+        userIds.admin,
+      ],
+    );
+
+    for (const template of syntheticNotificationTemplates) {
+      await client.query(
+        `INSERT INTO notifications.notification_template
+         (id, key, notification_class, channel, display_name, body_template, is_critical)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
+         ON CONFLICT (key) DO UPDATE
+         SET display_name = EXCLUDED.display_name,
+             body_template = EXCLUDED.body_template,
+             is_critical = EXCLUDED.is_critical,
+             updated_at = clock_timestamp()`,
+        [
+          template.id,
+          template.key,
+          template.notificationClass,
+          template.channel,
+          template.displayName,
+          template.bodyTemplate,
+          template.isCritical,
+        ],
+      );
+    }
+
+    await client.query(
+      `INSERT INTO notifications.notification_user_preference
+       (id, user_id, notification_class, channel, enabled)
+       VALUES ($1, $2, 'shift_reminder', 'push', false)
+       ON CONFLICT (user_id, notification_class, channel) DO UPDATE
+       SET enabled = false, updated_at = clock_timestamp()`,
+      ['92000000-0000-4000-8000-000000000001', userIds.admin],
+    );
+
+    for (const intent of syntheticNotificationIntents) {
+      await client.query(
+        `INSERT INTO notifications.notification_intent
+         (id, template_id, notification_class, channel, subject_type, subject_id,
+          recipient_ref, body_redacted, correlation_id, source_dedupe_key, status)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'PENDING')
+         ON CONFLICT (id) DO NOTHING`,
+        [
+          intent.id,
+          intent.templateId,
+          intent.notificationClass,
+          intent.channel,
+          intent.subjectType,
+          intent.subjectId,
+          intent.recipientRef,
+          intent.bodyRedacted,
+          intent.correlationId,
+          intent.sourceDedupeKey,
+        ],
+      );
+      await client.query(
+        `INSERT INTO platform.audit_event
+         (id, actor_user_id, action, subject_type, subject_id, reason_code,
+          correlation_id, metadata)
+         SELECT $1, $2, 'notification.intent.synthetic_created',
+          'notification_intent', $3, 'synthetic_local_baseline', $4, $5::jsonb
+         WHERE NOT EXISTS (
+           SELECT 1 FROM platform.audit_event
+           WHERE subject_type = 'notification_intent' AND subject_id = $3
+         )`,
+        [
+          `9a000000-0000-4000-8000-${intent.id.slice(-12)}`,
+          userIds.admin,
+          intent.id,
+          'synthetic-seed-v1',
+          JSON.stringify({
+            notificationClass: intent.notificationClass,
+            channel: intent.channel,
+            subjectType: intent.subjectType,
+          }),
+        ],
+      );
+    }
+
+    const notificationPolicyValue = JSON.stringify(syntheticNotificationPolicy);
+    await client.query(
+      `INSERT INTO platform.configuration_version
+       (id, config_key, environment, version, value, value_hash, status,
+        change_reason, created_by_user_id, approved_by_user_id,
+        activated_by_user_id, approved_at, activated_at)
+       SELECT $1, 'platform.notifications', 'development',
+              'notification-policy-local-v1', $2::jsonb, $3, 'ACTIVE',
+              'synthetic_local_baseline', $4, $4, $4,
+              clock_timestamp(), clock_timestamp()
+       WHERE NOT EXISTS (
+         SELECT 1 FROM platform.configuration_version
+         WHERE config_key = 'platform.notifications' AND environment = 'development'
+       )`,
+      [
+        '07000000-0000-4000-8000-000000000002',
+        notificationPolicyValue,
+        configurationValueHash(syntheticNotificationPolicy),
         userIds.admin,
       ],
     );

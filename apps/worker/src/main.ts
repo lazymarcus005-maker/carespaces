@@ -25,7 +25,8 @@ try {
     if (
       result.deadlines.claimed > 0 ||
       result.publisher.claimed > 0 ||
-      result.consumer.claimed > 0
+      result.consumer.claimed > 0 ||
+      result.notifications.claimed > 0
     ) {
       console.log('Event worker cycle.', result);
     }

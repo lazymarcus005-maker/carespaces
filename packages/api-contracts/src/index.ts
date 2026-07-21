@@ -115,6 +115,100 @@ export const ResolveOpsTaskRequestSchema = OpsTaskCommandSchema.extend({
 export type OpsTask = z.infer<typeof OpsTaskSchema>;
 export type OpsTaskListResponse = z.infer<typeof OpsTaskListResponseSchema>;
 
+export const NotificationChannelSchema = z.enum([
+  'push',
+  'sms',
+  'email',
+  'in_app',
+]);
+export const NotificationClassSchema = z.enum([
+  'incident_ack',
+  'sos',
+  'credential_expiry_block',
+  'replacement_failed',
+  'shift_reminder',
+  'reservation_expiry',
+  'payment_expiry',
+  'customer_approval_reminder',
+  'dispute_update',
+  'payout_retry',
+  'system',
+]);
+export const NotificationIntentStatusSchema = z.enum([
+  'PENDING',
+  'LEASED',
+  'DELIVERED',
+  'TERMINAL_FAILED',
+  'CANCELLED',
+]);
+export const NotificationAttemptStatusSchema = z.enum([
+  'FIRED',
+  'FAILED',
+  'DEAD_LETTER',
+]);
+export const NotificationIntentSchema = z.object({
+  id: z.uuid(),
+  tenantId: z.uuid().nullable(),
+  notificationClass: NotificationClassSchema,
+  channel: NotificationChannelSchema,
+  subjectType: z.string(),
+  subjectId: z.uuid(),
+  recipientUserId: z.uuid().nullable(),
+  recipientRef: z.string(),
+  bodyRedacted: z.string(),
+  correlationId: z.string(),
+  status: NotificationIntentStatusSchema,
+  attempts: z.number().int().nonnegative(),
+  nextAttemptAt: z.iso.datetime(),
+  deliveredAt: z.iso.datetime().nullable(),
+  terminalFailedAt: z.iso.datetime().nullable(),
+  lastError: z.string().nullable(),
+  acknowledgedAt: z.iso.datetime().nullable(),
+  opsTaskId: z.uuid().nullable(),
+  version: z.number().int().positive(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+});
+export const NotificationAttemptSchema = z.object({
+  id: z.uuid(),
+  intentId: z.uuid(),
+  attemptNumber: z.number().int().positive(),
+  channel: NotificationChannelSchema,
+  adapterName: z.string(),
+  status: NotificationAttemptStatusSchema,
+  providerMessageRef: z.string().nullable(),
+  errorClass: z.string().nullable(),
+  errorMessage: z.string().nullable(),
+  startedAt: z.iso.datetime(),
+  completedAt: z.iso.datetime().nullable(),
+});
+export const NotificationIntentListResponseSchema = z.object({
+  intents: z.array(NotificationIntentSchema),
+  generatedAt: z.iso.datetime(),
+});
+export const NotificationAttemptListResponseSchema = z.object({
+  intentId: z.uuid(),
+  attempts: z.array(NotificationAttemptSchema),
+  generatedAt: z.iso.datetime(),
+});
+
+export type NotificationIntent = z.infer<typeof NotificationIntentSchema>;
+export type NotificationAttempt = z.infer<typeof NotificationAttemptSchema>;
+export type NotificationIntentListResponse = z.infer<
+  typeof NotificationIntentListResponseSchema
+>;
+export type NotificationAttemptListResponse = z.infer<
+  typeof NotificationAttemptListResponseSchema
+>;
+export type NotificationClass = z.infer<typeof NotificationClassSchema>;
+export type NotificationChannel = z.infer<typeof NotificationChannelSchema>;
+export type NotificationIntentStatus = z.infer<
+  typeof NotificationIntentStatusSchema
+>;
+export type NotificationAttemptStatus = z.infer<
+  typeof NotificationAttemptStatusSchema
+>;
+
 export { createCarespacesClient } from './client.js';
 export type { CarespacesClient } from './client.js';
 export type { paths as CarespacesApiPaths } from './generated/openapi.js';
