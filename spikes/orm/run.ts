@@ -10,7 +10,7 @@ import postgres from 'postgres';
 import { patients, providerLocations, tenants } from './drizzle-schema';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const adminUrl = 'postgresql://postgres:postgres@127.0.0.1:54329/carespaces';
+const adminUrl = 'postgresql://postgres:postgres@127.0.0.1:5433/carespaces';
 const appPassword = 'carespaces_app';
 const databaseNames = ['carespaces_prisma', 'carespaces_drizzle'] as const;
 const tenantA = '10000000-0000-4000-8000-000000000001';
@@ -35,7 +35,7 @@ function databaseUrl(
   role = 'postgres',
   password = 'postgres',
 ): string {
-  return `postgresql://${role}:${password}@127.0.0.1:54329/${database}`;
+  return `postgresql://${role}:${password}@127.0.0.1:5433/${database}`;
 }
 
 async function prepareDatabases(): Promise<void> {

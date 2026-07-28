@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 
 const composeArgs = ['-f', 'infrastructure/database/compose.yaml'];
 const databaseName = 'carespaces_development';
-const ownerDatabaseUrl = `postgresql://postgres:postgres@127.0.0.1:54329/${databaseName}`;
+const ownerDatabaseUrl = `postgresql://postgres:postgres@127.0.0.1:5433/${databaseName}`;
 
 function run(command: string, args: string[], environment = process.env): void {
   const result = spawnSync(command, args, {

@@ -11,10 +11,10 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { configureApplication } from '../src/configure-application';
 
-const adminUrl = 'postgresql://postgres:postgres@127.0.0.1:54329/carespaces';
+const adminUrl = 'postgresql://postgres:postgres@127.0.0.1:5433/carespaces';
 const databaseName = 'carespaces_ops_api_test';
-const ownerUrl = `postgresql://postgres:postgres@127.0.0.1:54329/${databaseName}`;
-const appUrl = `postgresql://carespaces_app:carespaces_app@127.0.0.1:54329/${databaseName}`;
+const ownerUrl = `postgresql://postgres:postgres@127.0.0.1:5433/${databaseName}`;
+const appUrl = `postgresql://carespaces_app:carespaces_app@127.0.0.1:5433/${databaseName}`;
 const incidentTaskId = '81000000-0000-4000-8000-000000000001';
 
 function assert(condition: unknown, message: string): asserts condition {

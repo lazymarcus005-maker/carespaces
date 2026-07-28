@@ -11,10 +11,10 @@ import {
 } from '@carespaces/operations';
 import { Pool } from 'pg';
 
-const adminUrl = 'postgresql://postgres:postgres@127.0.0.1:54329/carespaces';
+const adminUrl = 'postgresql://postgres:postgres@127.0.0.1:5433/carespaces';
 const databaseName = 'carespaces_ops_task_test';
-const ownerUrl = `postgresql://postgres:postgres@127.0.0.1:54329/${databaseName}`;
-const appUrl = `postgresql://carespaces_app:carespaces_app@127.0.0.1:54329/${databaseName}`;
+const ownerUrl = `postgresql://postgres:postgres@127.0.0.1:5433/${databaseName}`;
+const appUrl = `postgresql://carespaces_app:carespaces_app@127.0.0.1:5433/${databaseName}`;
 const officerOneId = '10000000-0000-4000-8000-000000000001';
 const officerTwoId = '10000000-0000-4000-8000-000000000002';
 const officerThreeId = '10000000-0000-4000-8000-000000000003';

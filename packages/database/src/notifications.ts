@@ -456,13 +456,13 @@ export async function claimPendingNotificationIntents(
   const leaseId = options.leaseId ?? randomUUID();
   const result = await client.query(
     `WITH candidates AS (
-       SELECT id FROM notifications.notification_intent
-       WHERE status IN ('PENDING', 'LEASED')
-         AND next_attempt_at <= clock_timestamp()
-         AND terminal_failed_at IS NULL
-         AND (lease_expires_at IS NULL OR lease_expires_at <= clock_timestamp())
-         AND attempts < $3
-       ORDER BY notifications.due_priority(notification_class), next_attempt_at
+       SELECT n.id, n.notification_class FROM notifications.notification_intent n
+       WHERE n.status IN ('PENDING', 'LEASED')
+         AND n.next_attempt_at <= clock_timestamp()
+         AND n.terminal_failed_at IS NULL
+         AND (n.lease_expires_at IS NULL OR n.lease_expires_at <= clock_timestamp())
+         AND n.attempts < $3
+       ORDER BY notifications.due_priority(n.notification_class), n.next_attempt_at
        LIMIT $1
        FOR UPDATE SKIP LOCKED
      )
@@ -474,7 +474,7 @@ export async function claimPendingNotificationIntents(
          updated_at = clock_timestamp()
      FROM candidates
      WHERE intent.id = candidates.id
-     RETURNING ${intentColumns}`,
+     RETURNING intent.*`,
     [
       options.limit ?? DEFAULT_LIMIT,
       leaseId,
@@ -547,8 +547,8 @@ export async function markIntentAttemptFailed(
     `INSERT INTO notifications.notification_delivery_attempt
      (id, intent_id, attempt_number, channel, adapter_name, status,
       error_class, error_message, lease_id, completed_at)
-     SELECT $1, $2, $3, intent.channel, $4, $5, $6, $7, $8, clock_timestamp()
-     FROM notifications.notification_intent intent WHERE intent.id = $2
+     SELECT $1, $2::uuid, $3::int, intent.channel::text, $4::text, $5::text, $6::text, $7::text, $8::uuid, clock_timestamp()
+     FROM notifications.notification_intent intent WHERE intent.id = $2::uuid
      RETURNING ${attemptColumns}`,
     [
       attemptId,
@@ -565,11 +565,11 @@ export async function markIntentAttemptFailed(
     throw new Error('Notification delivery attempt insert returned no row');
   const intentResult = await client.query(
     `UPDATE notifications.notification_intent
-     SET status = CASE WHEN $4 THEN 'TERMINAL_FAILED' ELSE 'PENDING' END,
-         terminal_failed_at = CASE WHEN $4 THEN clock_timestamp() ELSE terminal_failed_at END,
-         next_attempt_at = CASE WHEN $4 THEN next_attempt_at
-           ELSE clock_timestamp() + ($5 * interval '1 millisecond') END,
-         last_error = $3,
+     SET status = CASE WHEN $3::boolean THEN 'TERMINAL_FAILED' ELSE 'PENDING' END,
+         terminal_failed_at = CASE WHEN $3::boolean THEN clock_timestamp() ELSE terminal_failed_at END,
+         next_attempt_at = CASE WHEN $3::boolean THEN next_attempt_at
+           ELSE clock_timestamp() + ($4 * interval '1 millisecond') END,
+         last_error = $2,
          lease_id = NULL,
          lease_expires_at = NULL,
          version = version + 1,
@@ -578,9 +578,8 @@ export async function markIntentAttemptFailed(
      RETURNING ${intentColumns}`,
     [
       input.intentId,
-      input.attemptNumber,
       `${input.errorClass}: ${input.errorMessage}`,
-      deadLettered,
+      deadLettered ? true : false,
       input.retryAfterMs ?? DEFAULT_RETRY_AFTER_MS,
     ],
   );

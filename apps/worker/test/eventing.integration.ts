@@ -9,10 +9,10 @@ import {
 } from '@carespaces/eventing';
 import { Pool } from 'pg';
 
-const adminUrl = 'postgresql://postgres:postgres@127.0.0.1:54329/carespaces';
+const adminUrl = 'postgresql://postgres:postgres@127.0.0.1:5433/carespaces';
 const databaseName = 'carespaces_eventing_test';
-const ownerUrl = `postgresql://postgres:postgres@127.0.0.1:54329/${databaseName}`;
-const appUrl = `postgresql://carespaces_app:carespaces_app@127.0.0.1:54329/${databaseName}`;
+const ownerUrl = `postgresql://postgres:postgres@127.0.0.1:5433/${databaseName}`;
+const appUrl = `postgresql://carespaces_app:carespaces_app@127.0.0.1:5433/${databaseName}`;
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);

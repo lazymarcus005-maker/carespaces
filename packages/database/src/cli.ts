@@ -5,7 +5,7 @@ import { seedSynthetic } from './seed.js';
 const command = process.argv[2];
 const databaseUrl =
   process.env.DATABASE_URL ??
-  'postgresql://postgres:postgres@127.0.0.1:54329/carespaces';
+  'postgresql://postgres:postgres@127.0.0.1:5433/carespaces';
 const pool = new Pool({ connectionString: databaseUrl, max: 2 });
 
 try {

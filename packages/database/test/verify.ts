@@ -3,11 +3,11 @@ import { readAuditTimeline } from '../src/audit-query.js';
 import { migrateUp, migrationStatus, rollbackLatest } from '../src/migrator.js';
 import { seedSynthetic } from '../src/seed.js';
 
-const adminUrl = 'postgresql://postgres:postgres@127.0.0.1:54329/carespaces';
+const adminUrl = 'postgresql://postgres:postgres@127.0.0.1:5433/carespaces';
 const testDatabase = 'carespaces_foundation_test';
-const testUrl = `postgresql://postgres:postgres@127.0.0.1:54329/${testDatabase}`;
-const appUrl = `postgresql://carespaces_app:carespaces_app@127.0.0.1:54329/${testDatabase}`;
-const auditReaderUrl = `postgresql://carespaces_audit_reader:carespaces_audit_reader@127.0.0.1:54329/${testDatabase}`;
+const testUrl = `postgresql://postgres:postgres@127.0.0.1:5433/${testDatabase}`;
+const appUrl = `postgresql://carespaces_app:carespaces_app@127.0.0.1:5433/${testDatabase}`;
+const auditReaderUrl = `postgresql://carespaces_audit_reader:carespaces_audit_reader@127.0.0.1:5433/${testDatabase}`;
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);

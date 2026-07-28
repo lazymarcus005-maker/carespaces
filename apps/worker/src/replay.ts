@@ -16,7 +16,7 @@ if (
 const pool = new Pool({
   connectionString:
     process.env.DATABASE_URL ??
-    'postgresql://carespaces_app:carespaces_app@127.0.0.1:54329/carespaces_development',
+    'postgresql://carespaces_app:carespaces_app@127.0.0.1:5433/carespaces_development',
   max: 1,
 });
 try {

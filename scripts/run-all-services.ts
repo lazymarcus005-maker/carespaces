@@ -16,7 +16,7 @@ if (ingestion.status !== 0) {
     env: {
       ...process.env,
       DATABASE_URL:
-        'postgresql://carespaces_app:carespaces_app@127.0.0.1:54329/carespaces_development',
+        'postgresql://carespaces_app:carespaces_app@127.0.0.1:5433/carespaces_development',
     },
     shell: process.platform === 'win32',
     stdio: 'inherit',

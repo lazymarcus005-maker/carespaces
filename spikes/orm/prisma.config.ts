@@ -5,6 +5,6 @@ export default defineConfig({
   datasource: {
     url:
       process.env.PRISMA_SPIKE_DATABASE_URL ??
-      'postgresql://postgres:postgres@127.0.0.1:54329/carespaces_prisma',
+      'postgresql://postgres:postgres@127.0.0.1:5433/carespaces_prisma',
   },
 });
